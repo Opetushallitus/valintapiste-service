@@ -149,3 +149,5 @@ fabric.properties
 ### Leiningen ###
 
 # End of https://www.gitignore.io/api/code,emacs,clojure,leiningen,jetbrains+all
+
+*.iml
