@@ -1,4 +1,4 @@
-(ns valintapiste-service.haku.haku
+(ns valintapiste-service.haku
     (:require [monger.core :as mg]
         [monger.collection :as mc]
         [monger.operators :refer :all]
@@ -21,12 +21,3 @@
                 "state" { $in ["ACTIVE", "INCOMPLETE"] }
                 })
             (mq/fields ["oid"]))))
-
-(defn tryFetchingSomething
-    "To test connection and query"
-    []
-    (let [{:keys [conn db]} (connect "***REMOVED***")
-    hakuOID "1.2.246.562.5.2013080813081926341927"        
-    hakukohdeOID "1.2.246.562.5.14498665679"]
-        (hakemusOidsForHakukohde db hakuOID hakukohdeOID)))
-
