@@ -11,7 +11,9 @@
    :origin {:country (s/enum :FI :PO)
             :city s/Str}})
 
-(def app
+(defn app
+  "This is the App"
+  [state]
   (api
     {:swagger
      {:ui "/"
@@ -27,7 +29,7 @@
         :return {:result Long}
         :query-params [x :- Long, y :- Long]
         :summary "adds two numbers together"
-        (ok {:result (+ x y)}))
+        (ok {:result (+ x y state)}))
 
       (POST "/echo" []
         :return Pizza
@@ -36,4 +38,4 @@
         (ok pizza)))))
 
 (defn -main []
-  (run-jetty app {:port 8000}) )
+  (run-jetty (app 66) {:port 8000}) )
