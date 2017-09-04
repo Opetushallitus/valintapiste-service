@@ -1,5 +1,6 @@
 (ns valintapiste-service.handler
   (:require [compojure.api.sweet :refer :all]
+            [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer :all]
             [schema.core :as s]))
 
@@ -33,3 +34,6 @@
         :body [pizza Pizza]
         :summary "echoes a Pizza"
         (ok pizza)))))
+
+(defn -main []
+  (run-jetty app {:port 8000}) )
