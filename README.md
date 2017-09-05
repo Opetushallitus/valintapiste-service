@@ -16,6 +16,9 @@ FIXME
 
 `lein testpostgres`
 
+Connecting with psql:
+`psql -h localhost -d test -U test`
+
 ### Packaging and running as standalone jar
 
 ```
