@@ -1,8 +1,10 @@
 (ns valintapiste-service.handler
   (:require [compojure.api.sweet :refer :all]
             [valintapiste-service.pistetiedot :as p]
+            [valintapiste-service.config :as c]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer :all]
+            [environ.core :refer [env]]
             [schema.core :as s]))
 
 (s/defschema Pistetieto
@@ -36,7 +38,8 @@
         (ok (p/fetchHakemuksenPistetiedot hakuOID hakemusOID))))))
       
 (defn -main []
-  (let [migrate "Execute migration first!"
+  (let [config (c/readConfigurationFile (env :valintapisteservice-properties))
+        migrate "Execute migration first!"
         mongo "Connect to MongoDB"
         postgre "Create connection pool"]
     (run-jetty (app mongo postgre) {:port 8000}) ))
