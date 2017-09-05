@@ -5,7 +5,8 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer :all]
             [environ.core :refer [env]]
-            [schema.core :as s]))
+            [schema.core :as s]
+            [valintapiste-service.db :as db]))
 
 (s/defschema Pistetieto
   {:hakemusOID s/Str
@@ -38,8 +39,11 @@
         (ok (p/fetchHakemuksenPistetiedot hakuOID hakemusOID))))))
       
 (defn -main []
+
   (let [config (c/readConfigurationFile (env :valintapisteservice-properties))
         migrate "Execute migration first!"
         mongo "Connect to MongoDB"
         postgre "Create connection pool"]
+    (db/migrate)
     (run-jetty (app mongo postgre) {:port 8000}) ))
+
