@@ -11,7 +11,7 @@
 
 (defn app
   "This is the App"
-  [state]
+  [mongo postgre]
   (api
     {:swagger
      {:ui "/"
@@ -36,4 +36,7 @@
         (ok (p/fetchHakemuksenPistetiedot hakuOID hakemusOID))))))
       
 (defn -main []
-  (run-jetty (app 66) {:port 8000}) )
+  (let [migrate "Execute migration first!"
+        mongo "Connect to MongoDB"
+        postgre "Create connection pool"]
+    (run-jetty (app mongo postgre) {:port 8000}) ))

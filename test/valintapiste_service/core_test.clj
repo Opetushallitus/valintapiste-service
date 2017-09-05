@@ -10,13 +10,13 @@
 (deftest a-test
 
   (testing "Test GET /haku/.../hakukohde/... returns list of hakukohteen pistetiedot"
-    (let [response ((app 3) (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4")))
+    (let [response ((app "mocked mongo" "mocked postgre") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4")))
           body     (parse-body (:body response))]
       (is (= (:status response) 200))
       (is (= body []))))
 
   (testing "Test GET /haku/.../hakemus/... returns hakemuksen pistetiedot"
-    (let [response ((app 3) (-> (mock/request :get  "/api/haku/1.2.3.4/hakemus/1.2.3.4")))
+    (let [response ((app "mocked mongo" "mocked postgre") (-> (mock/request :get  "/api/haku/1.2.3.4/hakemus/1.2.3.4")))
           body     (parse-body (:body response))]
       (is (= (:status response) 200))
       (is (= body {:hakemusOID "1.2.3.4" :pisteet {}})))))
