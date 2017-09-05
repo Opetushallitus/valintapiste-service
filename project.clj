@@ -9,6 +9,7 @@
                   [org.postgresql/postgresql "9.4.1208"]
                   [com.zaxxer/HikariCP "2.7.0"]
                   [ragtime "0.7.1"]]
+                  [webjure/jeesql "0.4.6"]]
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
    :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
