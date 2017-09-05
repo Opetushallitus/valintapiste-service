@@ -1,0 +1,9 @@
+{:host-virkailija "https://{{host_virkailija}}"
+ :db {:schema "public"
+      :servername "{{valintapisteservice_db_host}}"
+      :databasename "{{valintapisteservice_db_name}}"
+      :username "{{valintapisteservice_db_username}}"
+      :password "{{valintapisteservice_db_password}}"
+      :port {{valintapisteservice_db_port}}}
+ :server {:port {{palvelu_portti}}
+          :base-url "/valintapiste-service"}}
