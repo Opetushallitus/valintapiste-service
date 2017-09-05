@@ -1,6 +1,7 @@
 (ns valintapiste-service.core-test
   (:require [cheshire.core :as cheshire]
             [clojure.test :refer :all]
+            [valintapiste-service.db :as db]
             [valintapiste-service.handler :refer :all]
             [ring.mock.request :as mock]))
 
@@ -8,7 +9,7 @@
   (cheshire/parse-string (slurp body) true))
 
 (defn my-test-fixture [f]
-  (prn "HELLO FIXTURES!"))
+  (db/migrate))
 
 (use-fixtures :once my-test-fixture)
 

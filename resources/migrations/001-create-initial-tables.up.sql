@@ -1,7 +1,7 @@
 create type osallistumistieto as enum (
     'EI_OSALLISTUNUT',
     'OSALLISTUI'
-)
+);
 
 create table valintapiste (
     hakemus_oid varchar not null,
@@ -12,21 +12,9 @@ create table valintapiste (
     system_time tstzrange not null,
     transaction_id bigint not null,
     primary key (hakemus_oid, tunniste)
-)
+);
 
-create table valintapiste_history (like valintapiste)
-
-create trigger delete_valintapiste_history
-after delete
-on valintapiste
-for each row
-    execute procedure update_valintapiste_history();
-
-create trigger update_valintapiste_history
-after update
-on valintapiste
-for each row
-    execute procedure update_valintapiste_history();
+create table valintapiste_history (like valintapiste);
 
 create function update_valintapiste_history() returns trigger
 language plpgsql
@@ -52,3 +40,15 @@ begin
     return null;
 end;
 $$;
+
+create trigger delete_valintapiste_history
+after delete
+on valintapiste
+for each row
+    execute procedure update_valintapiste_history();
+
+create trigger update_valintapiste_history
+after update
+on valintapiste
+for each row
+    execute procedure update_valintapiste_history();

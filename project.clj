@@ -6,6 +6,7 @@
                   [metosin/compojure-api "1.1.11"]
                   [ring/ring-jetty-adapter "1.6.2"]
                   [com.novemberain/monger "3.1.0"]
+                  [org.postgresql/postgresql "9.4.1208"]
                   [ragtime "0.7.1"]]
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
