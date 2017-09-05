@@ -4,12 +4,9 @@
             [ring.util.http-response :refer :all]
             [schema.core :as s]))
 
-(s/defschema Pizza
-  {:name s/Str
-   (s/optional-key :description) s/Str
-   :size (s/enum :L :M :S)
-   :origin {:country (s/enum :FI :PO)
-            :city s/Str}})
+(s/defschema Pistetieto
+  {:hakemusOID s/Str
+   :pisteet {s/Str s/Str}})
 
 (defn app
   "This is the App"
@@ -19,23 +16,21 @@
      {:ui "/"
       :spec "/swagger.json"
       :data {:info {:title "Valintapiste-service"
-                    :description "Compojure Api example"}
-             :tags [{:name "api", :description "some apis"}]}}}
+                    :description "Pistetiedot"}
+             }}}
 
     (context "/api" []
       :tags ["api"]
 
-      (GET "/plus" []
-        :return {:result Long}
-        :query-params [x :- Long, y :- Long]
-        :summary "adds two numbers together"
-        (ok {:result (+ x y state)}))
+      (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID" []
+        :return [Pistetieto]
+        :summary "Hakukohteen hakemusten pistetiedot"
+        (ok []))
 
-      (POST "/echo" []
-        :return Pizza
-        :body [pizza Pizza]
-        :summary "echoes a Pizza"
-        (ok pizza)))))
-
+      (GET "/haku/:hakuOID/hakemus/:hakemusOID" []
+        :return Pistetieto
+        :summary "Hakemuksen pistetiedot"
+        (ok {:hakemusOID "1.2.3.4" :pisteet {}})))))
+      
 (defn -main []
   (run-jetty (app 66) {:port 8000}) )
