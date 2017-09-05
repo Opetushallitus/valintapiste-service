@@ -10,6 +10,7 @@
                   [ragtime "0.7.1"]]
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
+   :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "server.jar"
    :main valintapiste-service.handler
