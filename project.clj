@@ -4,7 +4,7 @@
                   [clj-http "3.7.0"]
                   [metosin/compojure-api "1.1.11"]
                   [ring/ring-jetty-adapter "1.6.2"]
-                  [com.novemberain/monger "3.1.0"]]
+                  [com.novemberain/monger "3.1.0"]
                   [ragtime "0.7.1"]]
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "server.jar"
