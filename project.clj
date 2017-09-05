@@ -10,7 +10,11 @@
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "server.jar"
    :main valintapiste-service.handler
-   :profiles {:dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]
+   :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]}
+   :profiles {:testpostgres {:main valintapiste-service.testpostgres
+                             :source-paths ["src" "test"]
+                             :dependencies [[ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
+              :dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]
                                   [cheshire "5.5.0"]
                                   [ring/ring-mock "0.3.0"]]
                    :plugins [[lein-ring "0.12.0"]]}})

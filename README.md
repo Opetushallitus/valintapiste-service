@@ -12,6 +12,10 @@ FIXME
 
 `lein test`
 
+### Start test Postgres (to localhost:5432/test with username test and password test)
+
+`lein testpostgres`
+
 ### Packaging and running as standalone jar
 
 ```
