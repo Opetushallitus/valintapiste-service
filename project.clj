@@ -7,13 +7,13 @@
                   [ring/ring-jetty-adapter "1.6.2"]
                   [com.novemberain/monger "3.1.0"]
                   [ragtime "0.7.1"]]
-   :aliases {"migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
+   :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
+             "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "server.jar"
    :main valintapiste-service.handler
-   :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]}
    :profiles {:testpostgres {:main valintapiste-service.testpostgres
-                             :source-paths ["src" "test"]
+                             :source-paths ["src" "testpostgres"]
                              :dependencies [[ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
               :dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]
                                   [cheshire "5.5.0"]

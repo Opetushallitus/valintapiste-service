@@ -7,6 +7,11 @@
 (defn parse-body [body]
   (cheshire/parse-string (slurp body) true))
 
+(defn my-test-fixture [f]
+  (prn "HELLO FIXTURES!"))
+
+(use-fixtures :once my-test-fixture)
+
 (deftest a-test
 
   (testing "Test GET /haku/.../hakukohde/... returns list of hakukohteen pistetiedot"
