@@ -7,8 +7,8 @@
                   [ring/ring-jetty-adapter "1.6.2"]
                   [com.novemberain/monger "3.1.0"]
                   [org.postgresql/postgresql "9.4.1208"]
-                  [com.zaxxer/HikariCP "2.7.0"]
-                  [ragtime "0.7.1"]]
+                  [hikari-cp "1.7.6"]
+                  [ragtime "0.7.1"]
                   [webjure/jeesql "0.4.6"]]
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
