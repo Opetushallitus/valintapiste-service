@@ -9,12 +9,17 @@
                   [org.postgresql/postgresql "9.4.1208"]
                   [hikari-cp "1.7.6"]
                   [ragtime "0.7.1"]
+                  [org.apache.logging.log4j/log4j-api "2.9.0"]
+                  [org.apache.logging.log4j/log4j-core "2.9.0"]
+                  [org.apache.logging.log4j/log4j-slf4j-impl "2.3"]
+                  [clj-log4j2 "0.1.1"]
                   [webjure/jeesql "0.4.6"]]
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
    :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "server.jar"
+   :resource-paths ["resources"]
    :main valintapiste-service.handler
    :profiles {:testpostgres {:main valintapiste-service.testpostgres
                              :source-paths ["src" "testpostgres"]
