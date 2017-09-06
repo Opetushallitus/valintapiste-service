@@ -11,9 +11,10 @@
   (cheshire/parse-string (slurp body) true))
 
 (defn my-test-fixture [f]
-  (db/migrate))
+  (db/migrate)
+  (f))
 
-;(use-fixtures :once my-test-fixture)
+(use-fixtures :once my-test-fixture)
 
 (deftest a-test
 
