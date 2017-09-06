@@ -10,7 +10,7 @@
 
 (s/defschema Pistetieto
   {:hakemusOID s/Str
-   :pisteet {s/Str s/Str}})
+   :pisteet {s/Keyword s/Str}})
 
 (defn app
   "This is the App"
@@ -36,8 +36,15 @@
         [hakuOID hakemusOID]
         :return Pistetieto
         :summary "Hakemuksen pistetiedot"
-        (ok (p/fetch-hakemuksen-pistetiedot postgre hakuOID hakemusOID))))))
-      
+        (ok (p/fetch-hakemuksen-pistetiedot postgre hakuOID hakemusOID)))
+
+      (PUT "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
+        [hakuOID hakukohdeOID]
+        :body [uudet_pistetiedot [Pistetieto]]
+        :return s/Int
+        :summary "Syötä pistetiedot hakukohteen avaimilla"
+        (ok 2)))))
+
 (defn -main []
 
   (let [config (c/readConfigurationFile (env :valintapisteservice-properties))

@@ -26,6 +26,6 @@
                              :dependencies [
                              [ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
               :dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]
-                                  [cheshire "5.5.0"]
+                                  [cheshire "5.8.0"]
                                   [ring/ring-mock "0.3.0"]]
                    :plugins [[lein-ring "0.12.0"]]}})
