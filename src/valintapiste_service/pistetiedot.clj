@@ -1,4 +1,7 @@
-(ns valintapiste-service.pistetiedot)
+(ns valintapiste-service.pistetiedot
+  (:require [jeesql.core :refer [defqueries]]))
+
+(defqueries "queries.sql")
 
 (defn fetchHakemuksenPistetiedot 
     "Returns pistetiedot for hakemus"
