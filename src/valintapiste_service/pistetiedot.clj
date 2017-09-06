@@ -5,11 +5,11 @@
 
 (defn fetchHakemuksenPistetiedot 
     "Returns pistetiedot for hakemus"
-    [hakuOID hakemusOID]
+    [connection hakuOID hakemusOID]
+    (find-valintapisteet-for-hakemus connection {:hakemus_oid hakemusOID})
     {:hakemusOID hakemusOID :pisteet {}})
 
-
 (defn fetchHakukohteenPistetiedot 
-    "Returns pistetiedot for hakukohde"
-    [hakuOID hakukohdeOID]
+  "Returns pistetiedot for hakukohde"
+    [connection hakuOID hakukohdeOID]
     [])

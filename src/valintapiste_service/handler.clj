@@ -30,13 +30,13 @@
         [hakuOID hakukohdeOID]
         :return [Pistetieto]
         :summary "Hakukohteen hakemusten pistetiedot"
-        (ok (p/fetchHakukohteenPistetiedot hakuOID hakukohdeOID)))
+        (ok (p/fetchHakukohteenPistetiedot postgre hakuOID hakukohdeOID)))
 
       (GET "/haku/:hakuOID/hakemus/:hakemusOID" 
         [hakuOID hakemusOID]
         :return Pistetieto
         :summary "Hakemuksen pistetiedot"
-        (ok (p/fetchHakemuksenPistetiedot hakuOID hakemusOID))))))
+        (ok (p/fetchHakemuksenPistetiedot postgre hakuOID hakemusOID))))))
       
 (defn -main []
 
