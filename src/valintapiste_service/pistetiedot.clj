@@ -3,14 +3,14 @@
 
 (defqueries "queries.sql")
 
-(defn fetchHakemuksenPistetiedot 
+(defn fetch-hakemuksen-pistetiedot 
     "Returns pistetiedot for hakemus"
     [connection hakuOID hakemusOID]
-    (find-valintapisteet-for-hakemus connection {:hakemus_oid hakemusOID})
+    (find-valintapisteet-for-hakemus connection {:hakemus-oid hakemusOID})
     {:hakemusOID hakemusOID :pisteet {}})
 
-(defn fetchHakukohteenPistetiedot 
+(defn fetch-hakukohteen-pistetiedot 
   "Returns pistetiedot for hakukohde"
     [connection hakuOID hakukohdeOID]
-    (find-valintapisteet-for-hakemukset connection {:hakemus_oids []})
+    (find-valintapisteet-for-hakemukset connection {:hakemus-oids []})
     [])
