@@ -6,7 +6,7 @@ create type osallistumistieto as enum (
 create table valintapiste (
     hakemus_oid varchar not null,
     tunniste varchar not null,
-    arvo integer,
+    arvo varchar,
     osallistuminen osallistumistieto,
     tallettaja integer not null,
     system_time tstzrange not null,
