@@ -11,7 +11,7 @@
                   [ragtime "0.7.1"]
                   [org.apache.logging.log4j/log4j-api "2.9.0"]
                   [org.apache.logging.log4j/log4j-core "2.9.0"]
-                  [org.apache.logging.log4j/log4j-slf4j-impl "2.3"]
+                  [org.apache.logging.log4j/log4j-slf4j-impl "2.9.0"]
                   [clj-log4j2 "0.1.1"]
                   [webjure/jeesql "0.4.6"]]
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
@@ -23,7 +23,8 @@
    :main valintapiste-service.handler
    :profiles {:testpostgres {:main valintapiste-service.testpostgres
                              :source-paths ["src" "testpostgres"]
-                             :dependencies [[ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
+                             :dependencies [
+                             [ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
               :dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]
                                   [cheshire "5.5.0"]
                                   [ring/ring-mock "0.3.0"]]

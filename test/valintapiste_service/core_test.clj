@@ -1,6 +1,7 @@
 (ns valintapiste-service.core-test
   (:require [cheshire.core :as cheshire]
             [clojure.test :refer :all]
+            [clj-log4j2.core :as log]
             [valintapiste-service.db :as db]
             [valintapiste-service.handler :refer :all]
             [ring.mock.request :as mock]))
