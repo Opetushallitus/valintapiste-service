@@ -20,21 +20,6 @@
     (find-valintapisteet-for-hakemukset {:datasource datasource} {:hakemus-oids hakemus_oids})
     []))
 
-(defn update-pistetiedot
-  "Updates pistetiedot"
-  [datasource hakuOID hakukohdeOID pistetiedot]
-  (let [connection {:datasource datasource}]
-    (update-pistetiedot-rec connection pistetiedot)))
-
-(defn- update-pistetiedot-rec [connection pistetiedot]
-  (if (empty? pistetiedot)
-    0
-    (let [pistetieto (first pistetiedot)
-          hakemus-oid (:hakemusOID pistetieto)
-          pisteet (seq (:pisteet pistetieto))]
-      (+ (upsert-pisteet! connection hakemus-oid pisteet)
-         (upsert-pistetiedot-rec connection (rest pistetiedot))))))
-
 (defn- upsert-pisteet! [connection hakemus-oid pisteet]
   (if (empty? pisteet)
     0
@@ -44,3 +29,19 @@
                 :arvo (first (rest piste))}]
       (+ (upsert-valintapiste! connection data)
          (upsert-pisteet! connection hakemus-oid (rest pisteet))))))
+
+(defn- update-pistetiedot-rec [connection pistetiedot]
+  (if (empty? pistetiedot)
+    0
+    (let [pistetieto (first pistetiedot)
+          hakemus-oid (:hakemusOID pistetieto)
+          pisteet (seq (:pisteet pistetieto))]
+      (+ (upsert-pisteet! connection hakemus-oid pisteet)
+         (update-pistetiedot-rec connection (rest pistetiedot))))))
+
+(defn update-pistetiedot
+  "Updates pistetiedot"
+  [datasource hakuOID hakukohdeOID pistetiedot]
+  (let [connection {:datasource datasource}]
+    (update-pistetiedot-rec connection pistetiedot)))
+
