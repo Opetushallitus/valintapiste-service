@@ -15,6 +15,32 @@
 
 (defn fetch-hakukohteen-pistetiedot 
   "Returns pistetiedot for hakukohde"
-    [datasource hakuOID hakukohdeOID]
-    (find-valintapisteet-for-hakemukset {:datasource datasource} {:hakemus-oids []})
-    [])
+  [datasource hakuOID hakukohdeOID]
+  (let [hakemus_oids []] ;TODO: Resolve hakemus_oids based on hakukohde oid here
+    (find-valintapisteet-for-hakemukset {:datasource datasource} {:hakemus-oids hakemus_oids})
+    []))
+
+(defn update-pistetiedot
+  "Updates pistetiedot"
+  [datasource hakuOID hakukohdeOID pistetiedot]
+  (let [connection {:datasource datasource}]
+    (update-pistetiedot-rec connection pistetiedot)))
+
+(defn- update-pistetiedot-rec [connection pistetiedot]
+  (if (empty? pistetiedot)
+    0
+    (let [pistetieto (first pistetiedot)
+          hakemus-oid (:hakemusOID pistetieto)
+          pisteet (seq (:pisteet pistetieto))]
+      (+ (upsert-pisteet! connection hakemus-oid pisteet)
+         (upsert-pistetiedot-rec connection (rest pistetiedot))))))
+
+(defn- upsert-pisteet! [connection hakemus-oid pisteet]
+  (if (empty? pisteet)
+    0
+    (let [piste (first pisteet)
+          data {:hakemus-oid hakemus-oid
+                :tunniste (first piste)
+                :arvo (first (rest piste))}]
+      (+ (upsert-valintapiste! connection data)
+         (upsert-pisteet! connection hakemus-oid (rest pisteet))))))

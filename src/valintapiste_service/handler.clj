@@ -44,7 +44,7 @@
         :body [uudet_pistetiedot [Pistetieto]]
         :return s/Int
         :summary "Syötä pistetiedot hakukohteen avaimilla"
-        (ok 2)))))
+        (ok (p/update-pistetiedot postgre hakuOID hakukohdeOID uudet_pistetiedot))))))
 
 (defn -main []
 

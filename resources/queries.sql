@@ -7,3 +7,10 @@ select tunniste, arvo from valintapiste where hakemus_oid = :hakemus-oid
 -- Returns valintapisteet for multiple hakemusoids
 select tunniste, arvo from valintapiste where hakemus_oid in (:hakemus-oids)
 
+-- name: upsert-valintapiste!
+-- Upserts valintapiste for specific hakemus oid and tunnus
+insert into valintapiste (hakemus_oid, tunniste, arvo, osallistuminen, tallettaja, system_time, transaction_id)
+values (:hakemus-oid, :tunniste, :arvo, :osallistuminen, :tallettaja, :system_time, :transaction_id)
+on conflict (hakemus_oid, tunniste) do update valintapiste
+set arvo = :arvo, osallistuminen = :osallistuminen
+where hakemus_oid = :hakemus_oid and tunniste = :tunniste
