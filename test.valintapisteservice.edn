@@ -1,0 +1,9 @@
+{:host-virkailija "http://localhost"
+ :db {:schema "public"
+      :servername "localhost"
+      :databasename "test"
+      :username "test"
+      :password "test"
+      :port 5432}
+ :server {:port 8080}
+          :base-url "/valintapiste-service"}

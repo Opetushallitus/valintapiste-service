@@ -5,11 +5,13 @@
             [valintapiste-service.db :as db]
             [cheshire.core :refer :all]
             [valintapiste-service.pool :as pool]
+            [valintapiste-service.config :as c]
             [valintapiste-service.handler :refer :all]
             [valintapiste-service.pistetiedot :as p]
             [ring.mock.request :as mock]))
 
-(def datasource (pool/datasource))
+(def config (c/readConfigurationFile))
+(def datasource (pool/datasource config))
 
 (defn clean [datasource]
   (doto (new org.flywaydb.core.Flyway)

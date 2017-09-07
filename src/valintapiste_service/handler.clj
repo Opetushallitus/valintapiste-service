@@ -4,8 +4,9 @@
             [valintapiste-service.config :as c]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer :all]
-            [environ.core :refer [env]]
+            [valintapiste-service.pool :as pool]
             [schema.core :as s]
+            [valintapiste-service.haku.haku :as mongo]
             [valintapiste-service.db :as db]))
 
 (s/defschema Pistetieto
@@ -14,7 +15,7 @@
 
 (defn app
   "This is the App"
-  [mongo postgre]
+  [mongo datasource]
   (api
     {:swagger
      {:ui "/"
@@ -30,13 +31,13 @@
         [hakuOID hakukohdeOID]
         :return [Pistetieto]
         :summary "Hakukohteen hakemusten pistetiedot"
-        (ok (p/fetch-hakukohteen-pistetiedot postgre hakuOID hakukohdeOID)))
+        (ok (p/fetch-hakukohteen-pistetiedot datasource hakuOID hakukohdeOID)))
 
       (GET "/haku/:hakuOID/hakemus/:hakemusOID" 
         [hakuOID hakemusOID]
         :return Pistetieto
         :summary "Hakemuksen pistetiedot"
-        (ok (p/fetch-hakemuksen-pistetiedot postgre hakuOID hakemusOID)))
+        (ok (p/fetch-hakemuksen-pistetiedot datasource hakuOID hakemusOID)))
 
       (PUT "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
         [hakuOID hakukohdeOID]
@@ -47,10 +48,11 @@
 
 (defn -main []
 
-  (let [config (c/readConfigurationFile (env :valintapisteservice-properties))
-        migrate "Execute migration first!"
-        mongo "Connect to MongoDB"
-        postgre "Create connection pool"]
-    (db/migrate)
-    (run-jetty (app mongo postgre) {:port 8000}) ))
+  (let [config (c/readConfigurationFile)
+        abc (prn (-> config :db :password))
+        datasource (pool/datasource config)
+        ;mongoConnection (mongo/connection config)
+        ]
+    (db/migrate datasource)
+    (run-jetty (app "mongo" datasource) {:port (-> config :server :port)}) ))
 

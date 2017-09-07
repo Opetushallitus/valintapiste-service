@@ -1,11 +1,11 @@
-(ns valintapiste-service.haku
+(ns valintapiste-service.haku.haku
     (:require [monger.core :as mg]
         [monger.collection :as mc]
         [monger.operators :refer :all]
         [monger.query :as mq])
     (:import [com.mongodb MongoOptions ServerAddress]))
 
-(defn connect 
+(defn connection 
     "Establish connection with MongoURI"
     [uri]
     (mg/connect-via-uri uri))

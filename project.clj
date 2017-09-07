@@ -8,7 +8,6 @@
                   [com.novemberain/monger "3.1.0"]
                   [org.postgresql/postgresql "9.4.1208"]
                   [hikari-cp "1.7.6"]
-                  ;[ragtime "0.7.1"]
                   [org.apache.logging.log4j/log4j-api "2.9.0"]
                   [org.apache.logging.log4j/log4j-core "2.9.0"]
                   [org.apache.logging.log4j/log4j-slf4j-impl "2.9.0"]
@@ -21,6 +20,7 @@
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "server.jar"
    :resource-paths ["resources"]
+   :jvm-opts ["-Dvalintapisteservice-properties=test.valintapisteservice.edn"]
    :main valintapiste-service.handler
    :profiles {:testpostgres {:main valintapiste-service.testpostgres
                              :source-paths ["src" "testpostgres"]
