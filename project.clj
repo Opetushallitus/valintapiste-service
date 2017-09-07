@@ -8,11 +8,12 @@
                   [com.novemberain/monger "3.1.0"]
                   [org.postgresql/postgresql "9.4.1208"]
                   [hikari-cp "1.7.6"]
-                  [ragtime "0.7.1"]
+                  ;[ragtime "0.7.1"]
                   [org.apache.logging.log4j/log4j-api "2.9.0"]
                   [org.apache.logging.log4j/log4j-core "2.9.0"]
                   [org.apache.logging.log4j/log4j-slf4j-impl "2.9.0"]
                   [clj-log4j2 "0.1.1"]
+                  [org.flywaydb/flyway-core "4.2.0"]
                   [webjure/jeesql "0.4.6"]]
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}

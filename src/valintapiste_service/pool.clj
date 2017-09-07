@@ -2,15 +2,15 @@
     (:require [hikari-cp.core :refer :all]
         [clojure.java.jdbc :as jdbc]))
 
-(def datasource-options {:username      "test"
+(defn datasource-options [] {:username      "test"
     :password      "test"
     :database-name "test"
     :server-name   "localhost"
     :port-number   5432
     :adapter       "postgresql"})
 
-(def datasource
-    (make-datasource datasource-options))
+(defn datasource []
+    (make-datasource (datasource-options)))
 
 (defn -main [& args]
         (jdbc/with-db-connection [conn {:datasource datasource}]

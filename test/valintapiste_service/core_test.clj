@@ -4,22 +4,32 @@
             [clj-log4j2.core :as log]
             [valintapiste-service.db :as db]
             [cheshire.core :refer :all]
+            [valintapiste-service.pool :as pool]
             [valintapiste-service.handler :refer :all]
+            [valintapiste-service.pistetiedot :as p]
             [ring.mock.request :as mock]))
+
+(def datasource (pool/datasource))
+
+(defn clean [datasource]
+  (doto (new org.flywaydb.core.Flyway)
+    (.setDataSource datasource)
+    (.clean)))
 
 (defn parse-body [body]
   (cheshire/parse-string (slurp body) true))
 
 (defn my-test-fixture [f]
-  (db/migrate)
+  (clean datasource)
+  (db/migrate datasource)
   (f))
 
 (use-fixtures :once my-test-fixture)
 
-(deftest a-test
-
+(deftest valintapisteTests
+  (let [abc "ABC"]
   (testing "Test GET /haku/.../hakukohde/... returns list of hakukohteen pistetiedot"
-    (let [response ((app "mocked mongo" "mocked postgre") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4")))
+    (let [response ((app abc "testiPossuYhteys") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4")))
           body     (parse-body (:body response))]
       (is (= (:status response) 200))
       (is (= body []))))
@@ -38,5 +48,5 @@
                         (mock/content-type "application/json")))
           body     (parse-body (:body response))]
       (is (= (:status response) 200))
-      (is (= body 2)))))
+      (is (= body 2))))))
     
