@@ -9,20 +9,24 @@
             [valintapiste-service.config :as c]
             [valintapiste-service.handler :refer :all]
             [valintapiste-service.pistetiedot :as p]
+            [valintapiste-service.freeport :as freeport]
             [valintapiste-service.testpostgres :as postgre]
             [ring.mock.request :as mock]))
 
-(def config (c/readConfigurationFile))
+(def configAndDatasource 
+  (let [defaultConfig (c/readConfigurationFile)
+        isOk (testdb/testConnection defaultConfig)
+        finalConfig (if (-> isOk :connectionWorks) defaultConfig (update-in defaultConfig [:db :port] freeport/get-free-port))]
+        (if (-> isOk :connectionWorks)
+          (do (log/info "PostgreSQL connection works! Using it for tests!")
+            {:datasource (pool/datasource finalConfig) :config finalConfig})
+          (do (log/info "Starting PostgreSQL for tests!")
+            (postgre/startPostgreSQL finalConfig)
+            {:datasource (pool/datasource finalConfig) :config finalConfig}))))
 
-(def datasource 
-  (let [isOk (testdb/testConnection config)]
-    (if (-> isOk :connectionWorks)
-      (do (log/info "PostgreSQL connection works! Using it for tests!")
-          (pool/datasource config))
-      (do (log/info "Starting PostgreSQL for tests!")
-          (postgre/startPostgreSQL config)
-          (pool/datasource config)))))
-
+(def config (-> configAndDatasource :config))
+(def datasource (-> configAndDatasource :datasource))
+  
 (defn clean [datasource]
   (doto (new org.flywaydb.core.Flyway)
     (.setDataSource datasource)

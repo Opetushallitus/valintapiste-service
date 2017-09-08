@@ -3,9 +3,15 @@
               [clj-log4j2.core :as log]
               [environ.core :refer [env]]))
 
+(defn- readConfigurationFromPath
+    [configFile]
+        (log/info "Using config file: {}!" configFile)
+        (edn/read-string (slurp configFile)))
+
 (defn readConfigurationFile
     "Reads configuration file"
-    []
-    (let [configFile (env :valintapisteservice-properties)]
-        (log/info "Using config file: {}!" configFile)
-        (edn/read-string (slurp configFile))))
+    ([]
+    (readConfigurationFromPath (env :valintapisteservice-properties)))
+    ([configFile]
+    (readConfigurationFromPath configFile)))
+        
