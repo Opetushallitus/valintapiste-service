@@ -2,7 +2,11 @@
   (:require [jeesql.core :refer [defqueries]]))
 
 (defn to-pistetieto [row]
-  {(:tunnus row) (:arvo row)})
+  {(:tunniste row)
+   {:tunniste row
+    :arvo (:arvo row)
+    :osallistuminen (:osallistuminen row)
+    :tallettaja (:tallettaja row)}})
 
 (defqueries "queries.sql")
 
