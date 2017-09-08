@@ -14,6 +14,6 @@
 
 (defn -main [& args]
         (jdbc/with-db-connection [conn {:datasource datasource}]
-          (let [rows (jdbc/query conn "SELECT * FROM valintapiste")]
+          (let [rows (jdbc/query conn "SELECT 1")]
             (println rows)))
         (close-datasource datasource))

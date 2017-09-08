@@ -2,16 +2,26 @@
   (:require [cheshire.core :as cheshire]
             [clojure.test :refer :all]
             [clj-log4j2.core :as log]
+            [valintapiste-service.test-db :as testdb]
             [valintapiste-service.db :as db]
             [cheshire.core :refer :all]
             [valintapiste-service.pool :as pool]
             [valintapiste-service.config :as c]
             [valintapiste-service.handler :refer :all]
             [valintapiste-service.pistetiedot :as p]
+            [valintapiste-service.testpostgres :as postgre]
             [ring.mock.request :as mock]))
 
 (def config (c/readConfigurationFile))
-(def datasource (pool/datasource config))
+
+(def datasource 
+  (let [isOk (testdb/testConnection config)]
+    (if (-> isOk :connectionWorks)
+      (do (log/info "PostgreSQL connection works! Using it for tests!")
+          (pool/datasource config))
+      (do (log/info "Starting PostgreSQL for tests!")
+          (postgre/startPostgreSQL)
+          (pool/datasource config)))))
 
 (defn clean [datasource]
   (doto (new org.flywaydb.core.Flyway)

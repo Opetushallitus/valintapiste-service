@@ -23,10 +23,11 @@
    :jvm-opts ["-Dvalintapisteservice-properties=test.valintapisteservice.edn"]
    :main valintapiste-service.handler
    :profiles {:testpostgres {:main valintapiste-service.testpostgres
-                             :source-paths ["src" "testpostgres"]
-                             :dependencies [
-                             [ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
+                             :source-paths ["src" "test"]
+                             :dependencies [[ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
               :dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]
                                   [cheshire "5.8.0"]
+                                  [org.clojure/java.jdbc "0.7.1"]
+                                  [ru.yandex.qatools.embed/postgresql-embedded "2.4"]
                                   [ring/ring-mock "0.3.0"]]
                    :plugins [[lein-ring "0.12.0"]]}})
