@@ -20,7 +20,7 @@
       (do (log/info "PostgreSQL connection works! Using it for tests!")
           (pool/datasource config))
       (do (log/info "Starting PostgreSQL for tests!")
-          (postgre/startPostgreSQL)
+          (postgre/startPostgreSQL config)
           (pool/datasource config)))))
 
 (defn clean [datasource]
