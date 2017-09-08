@@ -4,7 +4,12 @@
 (defn pg-uri
     [config]
     {:connection-timeout 1500
-     :connection-uri (str "jdbc:postgresql://localhost:5432/test?user=test&password=test")})
+     :connection-uri (str "jdbc:postgresql://" 
+                            (-> config :db :servername) 
+                                ":" (-> config :db :port) 
+                                "/" (-> config :db :databasename) 
+                                "?user=" (-> config :db :username) 
+                                "&password=" (-> config :db :password))})
 
 (defn testConnection 
     "Test if connection works"
