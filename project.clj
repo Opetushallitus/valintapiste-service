@@ -21,7 +21,7 @@
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
    :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
    :ring {:handler valintapiste-service.handler/app}
-   :uberjar-name "valintapiste-service-standalone.jar"
+   :uberjar-name "valintapiste-service-0.1.0-SNAPSHOT-standalone.jar"
    :resource-paths ["resources"]
    :jvm-opts ["-Dvalintapisteservice-properties=test.valintapisteservice.edn"]
    :main valintapiste-service.handler
