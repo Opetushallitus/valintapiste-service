@@ -8,7 +8,7 @@ create table valintapiste (
     tunniste varchar not null,
     arvo varchar,
     osallistuminen osallistumistieto,
-    tallettaja integer not null,
+    tallettaja varchar not null,
     system_time tstzrange not null default tstzrange(now(), null, '[)'),
     transaction_id bigint not null default txid_current(),
     primary key (hakemus_oid, tunniste)
