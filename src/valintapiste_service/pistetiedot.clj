@@ -28,24 +28,30 @@
   (if (empty? pisteet)
     0
     (let [piste (first pisteet)
-          data {:hakemus-oid hakemus-oid
-                :tunniste (first piste)
-                :arvo (first (rest piste))}]
-      (+ (upsert-valintapiste! connection data)
+          tunniste (name (first piste))
+          pistetieto (first (rest piste))
+          osallistuminen (doto (org.postgresql.util.PGobject.)
+                           (.setType "osallistumistieto")
+                           (.setValue (:osallistuminen pistetieto)))
+          query-data {:hakemus-oid hakemus-oid
+                :tunniste tunniste
+                :arvo (:arvo pistetieto)
+                :osallistuminen osallistuminen
+                :tallettaja (:tallettaja pistetieto)}]
+      (+ (upsert-valintapiste! connection query-data)
          (upsert-pisteet! connection hakemus-oid (rest pisteet))))))
 
-(defn- update-pistetiedot-rec [connection pistetiedot]
-  (if (empty? pistetiedot)
+(defn- update-pistetiedot-rec [connection pistetietowrappers]
+  (if (empty? pistetietowrappers)
     0
-    (let [pistetieto (first pistetiedot)
-          hakemus-oid (:hakemusOID pistetieto)
-          pisteet (seq (:pisteet pistetieto))]
+    (let [pistetietowrapper (first pistetietowrappers)
+          hakemus-oid (:hakemusOID pistetietowrapper)
+          pisteet (seq (:pisteet pistetietowrapper))]
       (+ (upsert-pisteet! connection hakemus-oid pisteet)
-         (update-pistetiedot-rec connection (rest pistetiedot))))))
+         (update-pistetiedot-rec connection (rest pistetietowrappers))))))
 
 (defn update-pistetiedot
   "Updates pistetiedot"
-  [datasource hakuOID hakukohdeOID pistetiedot]
+  [datasource hakuOID hakukohdeOID pistetietowrappers]
   (let [connection {:datasource datasource}]
-    (update-pistetiedot-rec connection pistetiedot)))
-
+    (update-pistetiedot-rec connection pistetietowrappers)))

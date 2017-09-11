@@ -57,8 +57,16 @@
       (is (= body {:hakemusOID "1.2.3.4" :pisteet {}}))))
       
   (testing "Test PUT /haku/.../hakukohde/... put pistetiedot for 'hakukohteen tunnisteet'"
-    (let [json-body (generate-string [{:hakemusOID "1" :pisteet {"A" "D"}}
-                                                    {:hakemusOID "2" :pisteet {"C" "B"}}])
+    (let [json-body (generate-string [{:hakemusOID "1"
+                                       :pisteet {"A" {:tunniste "A"
+                                                      :arvo "A"
+                                                      :osallistuminen "OSALLISTUI"
+                                                      :tallettaja "1.2.3.4"}}}
+                                      {:hakemusOID "2"
+                                       :pisteet {"B" {:tunniste "B"
+                                                      :arvo "B"
+                                                      :osallistuminen "OSALLISTUI"
+                                                      :tallettaja "1.2.3.4"}}}])
           response ((app "mocked mongo" datasource) 
                     (-> (mock/request :put "/api/haku/1.2.3.4/hakukohde/1.2.3.4" json-body)
                         (mock/content-type "application/json")))

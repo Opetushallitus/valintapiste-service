@@ -13,7 +13,7 @@
 (s/defschema Pistetieto
   {:tunniste s/Str
    :arvo s/Str
-   :osallistuminen s/Keyword
+   :osallistuminen s/Str
    :tallettaja s/Str})
 
 (s/defschema PistetietoWrapper
