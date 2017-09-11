@@ -7,7 +7,8 @@
             [valintapiste-service.pool :as pool]
             [schema.core :as s]
             [valintapiste-service.haku.haku :as mongo]
-            [valintapiste-service.db :as db]))
+            [valintapiste-service.db :as db])
+  (:gen-class))
 
 (s/defschema Pistetieto
   {:tunniste s/Str
