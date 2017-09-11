@@ -20,13 +20,16 @@
                   [org.flywaydb/flyway-core "4.2.0"]
                   [webjure/jeesql "0.4.6"]]
    :prep-tasks ["compile"]
+   ;:eval-in :classloader
+   ;:bootclasspath true
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
    :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "valintapiste-service-0.1.0-SNAPSHOT-standalone.jar"
    :resource-paths ["resources"]
-   :jvm-opts ["-Dvalintapisteservice-properties=test.valintapisteservice.edn"]
+   :jvm-opts ["-Dvalintapisteservice-properties=test.valintapisteservice.edn"
+              "-XX:+TieredCompilation" "-XX:TieredStopAtLevel=1"]
    :main valintapiste-service.handler
    :aot [valintapiste-service.handler]
    :plugins [[lein-ring "0.12.0"]
