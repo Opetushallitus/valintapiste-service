@@ -11,8 +11,8 @@ select tunniste, arvo, osallistuminen, tallettaja from valintapiste where hakemu
 -- Upserts valintapiste for specific hakemus oid and tunnus
 insert into valintapiste (hakemus_oid, tunniste, arvo, osallistuminen, tallettaja)
 values (:hakemus-oid, :tunniste, :arvo, :osallistuminen, :tallettaja)
-on conflict (hakemus_oid, tunniste) do update valintapiste
+on conflict (hakemus_oid, tunniste) do update
 set arvo = :arvo,
     osallistuminen = :osallistuminen,
     tallettaja = :tallettaja
-where hakemus_oid = :hakemus-oid and tunniste = :tunniste
+where valintapiste.hakemus_oid = :hakemus-oid and valintapiste.tunniste = :tunniste
