@@ -19,6 +19,7 @@ and then:
 
 `time lein test`
 lein test             9.46s user 0.95s system 95% cpu 10.877 total
+
 `time lein trampoline test`
 lein trampoline test  6.32s user 0.59s system 99% cpu 6.909 total
 
