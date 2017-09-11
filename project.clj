@@ -25,6 +25,7 @@
    :resource-paths ["resources"]
    :jvm-opts ["-Dvalintapisteservice-properties=test.valintapisteservice.edn"]
    :main valintapiste-service.handler
+   :aot [valintapiste-service.handler]
    :plugins [[lein-ring "0.12.0"]
              [lein-resource "14.10.2"]
              [lein-deploy-artifacts "0.1.0"]]
