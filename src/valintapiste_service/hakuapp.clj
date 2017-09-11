@@ -1,4 +1,4 @@
-(ns valintapiste-service.haku.haku
+(ns valintapiste-service.hakuapp
     (:require [monger.core :as mg]
         [monger.collection :as mc]
         [monger.operators :refer :all]

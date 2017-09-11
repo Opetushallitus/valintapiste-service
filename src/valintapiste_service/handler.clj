@@ -6,7 +6,7 @@
             [ring.util.http-response :refer :all]
             [valintapiste-service.pool :as pool]
             [schema.core :as s]
-            [valintapiste-service.haku.haku :as mongo]
+            [valintapiste-service.hakuapp :as mongo]
             [valintapiste-service.db :as db])
   (:gen-class))
 
@@ -22,7 +22,7 @@
 
 (defn app
   "This is the App"
-  [mongo datasource]
+  [hakuapp datasource]
   (api
     {:swagger
      {:ui "/"
@@ -38,7 +38,7 @@
         [hakuOID hakukohdeOID]
         :return [PistetietoWrapper]
         :summary "Hakukohteen hakemusten pistetiedot"
-        (ok (p/fetch-hakukohteen-pistetiedot datasource hakuOID hakukohdeOID)))
+        (ok (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)))
 
       (GET "/haku/:hakuOID/hakemus/:hakemusOID" 
         [hakuOID hakemusOID]
@@ -58,8 +58,8 @@
   (let [config (c/readConfigurationFile)
         abc (prn (-> config :db :password))
         datasource (pool/datasource config)
-        ;mongoConnection (mongo/connection config)
+        mongoConnection (mongo/connection config)
         ]
     (db/migrate datasource)
-    (run-jetty (app "mongo" datasource) {:port (-> config :server :port)}) ))
+    (run-jetty (app (partial mongo/hakemusOidsForHakukohde {:db mongoConnection}) datasource) {:port (-> config :server :port)}) ))
 

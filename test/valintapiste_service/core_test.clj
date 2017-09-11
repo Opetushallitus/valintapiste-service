@@ -35,42 +35,42 @@
 (defn parse-body [body]
   (cheshire/parse-string (slurp body) true))
 
-(defn my-test-fixture [f]
+(defn valintapiste-test-fixture [f]
   (clean datasource)
   (db/migrate datasource)
   (f))
 
-(use-fixtures :once my-test-fixture)
+(use-fixtures :once valintapiste-test-fixture)
 
-(deftest valintapisteTests
-  (let [abc "ABC"]
-  (testing "Test GET /haku/.../hakukohde/... returns list of hakukohteen pistetiedot"
-    (let [response ((app abc datasource) (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4")))
-          body     (parse-body (:body response))]
-      (is (= (:status response) 200))
-      (is (= body []))))
+(deftest valintapiste-tests
+  (let [mockedMongo (fn [hakuOID hakukohdeOID] ["1.2.3.4"])]
+    (testing "Test GET /haku/.../hakukohde/... returns list of hakukohteen pistetiedot"
+      (let [response ((app mockedMongo datasource) (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4")))
+            body     (parse-body (:body response))]
+        (is (= (:status response) 200))
+        (is (= body []))))
 
-  (testing "Test GET /haku/.../hakemus/... returns hakemuksen pistetiedot"
-    (let [response ((app "mocked mongo" datasource) (-> (mock/request :get  "/api/haku/1.2.3.4/hakemus/1.2.3.4")))
-          body     (parse-body (:body response))]
-      (is (= (:status response) 200))
-      (is (= body {:hakemusOID "1.2.3.4" :pisteet {}}))))
-      
-  (testing "Test PUT /haku/.../hakukohde/... put pistetiedot for 'hakukohteen tunnisteet'"
-    (let [json-body (generate-string [{:hakemusOID "1"
-                                       :pisteet {"A" {:tunniste "A"
-                                                      :arvo "A"
-                                                      :osallistuminen "OSALLISTUI"
-                                                      :tallettaja "1.2.3.4"}}}
-                                      {:hakemusOID "2"
-                                       :pisteet {"B" {:tunniste "B"
-                                                      :arvo "B"
-                                                      :osallistuminen "OSALLISTUI"
-                                                      :tallettaja "1.2.3.4"}}}])
-          response ((app "mocked mongo" datasource) 
-                    (-> (mock/request :put "/api/haku/1.2.3.4/hakukohde/1.2.3.4" json-body)
-                        (mock/content-type "application/json")))
-          body     (parse-body (:body response))]
-      (is (= (:status response) 200))
-      (is (= body 2))))))
+    (testing "Test GET /haku/.../hakemus/... returns hakemuksen pistetiedot"
+      (let [response ((app mockedMongo datasource) (-> (mock/request :get  "/api/haku/1.2.3.4/hakemus/1.2.3.4")))
+            body     (parse-body (:body response))]
+        (is (= (:status response) 200))
+        (is (= body {:hakemusOID "1.2.3.4" :pisteet {}}))))
+        
+    (testing "Test PUT /haku/.../hakukohde/... put pistetiedot for 'hakukohteen tunnisteet'"
+      (let [json-body (generate-string [{:hakemusOID "1"
+                                        :pisteet {"A" {:tunniste "A"
+                                                        :arvo "A"
+                                                        :osallistuminen "OSALLISTUI"
+                                                        :tallettaja "1.2.3.4"}}}
+                                        {:hakemusOID "2"
+                                        :pisteet {"B" {:tunniste "B"
+                                                        :arvo "B"
+                                                        :osallistuminen "OSALLISTUI"
+                                                        :tallettaja "1.2.3.4"}}}])
+            response ((app mockedMongo datasource) 
+                      (-> (mock/request :put "/api/haku/1.2.3.4/hakukohde/1.2.3.4" json-body)
+                          (mock/content-type "application/json")))
+            body     (parse-body (:body response))]
+        (is (= (:status response) 200))
+        (is (= body 2))))))
     

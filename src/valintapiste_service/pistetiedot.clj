@@ -1,5 +1,6 @@
 (ns valintapiste-service.pistetiedot
-  (:require [jeesql.core :refer [defqueries]]))
+  (:require [jeesql.core :refer [defqueries]]
+            [valintapiste-service.haku.haku :as hakuapp]))
 
 (defn to-pistetieto [row]
   {(:tunniste row)
@@ -19,8 +20,8 @@
 
 (defn fetch-hakukohteen-pistetiedot 
   "Returns pistetiedot for hakukohde"
-  [datasource hakuOID hakukohdeOID]
-  (let [hakemus_oids []] ;TODO: Resolve hakemus_oids based on hakukohde oid here
+  [hakuapp datasource hakuOID hakukohdeOID]
+  (let [hakemus_oids (hakuapp hakuOID hakukohdeOID)]
     (find-valintapisteet-for-hakemukset {:datasource datasource} {:hakemus-oids hakemus_oids})
     []))
 
