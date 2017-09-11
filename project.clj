@@ -2,6 +2,9 @@
    :description "FIXME: write description"
    :deploy-repositories {"snapshots" {:url "https://artifactory.oph.ware.fi/artifactory/oph-sade-snapshot-local"}
    "releases" {:url "https://artifactory.oph.ware.fi/artifactory/oph-sade-release-local"}}
+   :repositories [["oph-releases" "https://artifactory.oph.ware.fi/artifactory/oph-sade-release-local"]
+   ["oph-snapshots" "https://artifactory.oph.ware.fi/artifactory/oph-sade-snapshot-local"]
+   ["ext-snapshots" "https://artifactory.oph.ware.fi/artifactory/ext-snapshot-local"]]
    :dependencies [[org.clojure/clojure "1.8.0"]
                   [clj-http "3.7.0"]
                   [environ "1.1.0"]
