@@ -35,9 +35,27 @@
 (defn parse-body [body]
   (cheshire/parse-string (slurp body) true))
 
+(defn- insert-test-data []
+  (let [test-data [{:hakemusOID "testi-hakemus-1"
+                    :pisteet {"piste-1" {:tunniste "piste-1"
+                                         :arvo "10"
+                                         :osallistuminen "OSALLISTUI"
+                                         :tallettaja "1.2.3.4"}}}
+                   {:hakemusOID "testi-hakemus-2"
+                    :pisteet {"piste-1" {:tunniste "piste-1"
+                                         :arvo "9"
+                                         :osallistuminen "OSALLISTUI"
+                                         :tallettaja "1.2.3.4"}
+                              "piste-2" {:tunniste "piste-2"
+                                         :arvo "5"
+                                         :osallistuminen "OSALLISTUI"
+                                         :tallettaja "1.2.3.4"}}}]]
+    (p/update-pistetiedot datasource "1.2.3.4" "1.2.3.4" test-data)))
+
 (defn valintapiste-test-fixture [f]
   (clean datasource)
   (db/migrate datasource)
+  (insert-test-data)
   (f))
 
 (use-fixtures :once valintapiste-test-fixture)

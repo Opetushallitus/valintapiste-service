@@ -15,7 +15,7 @@
     "Returns pistetiedot for hakemus"
     [datasource hakuOID hakemusOID]
     (let [connection {:datasource datasource}
-        pistetiedot (find-valintapisteet-for-hakemus connection {:hakemus-oid hakemusOID})]
+          pistetiedot (find-valintapisteet-for-hakemus connection {:hakemus-oid hakemusOID})]
       {:hakemusOID hakemusOID :pisteet pistetiedot}))
 
 (defn fetch-hakukohteen-pistetiedot 
