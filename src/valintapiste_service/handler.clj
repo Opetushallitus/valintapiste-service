@@ -18,7 +18,7 @@
 
 (s/defschema PistetietoWrapper
   {:hakemusOID s/Str
-   :pisteet {s/Keyword Pistetieto}})
+   :pisteet [Pistetieto]})
 
 (defn app
   "This is the App"
@@ -39,19 +39,21 @@
         :return [PistetietoWrapper]
         :summary "Hakukohteen hakemusten pistetiedot"
         (ok (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)))
+        
 
       (GET "/haku/:hakuOID/hakemus/:hakemusOID" 
         [hakuOID hakemusOID]
         :return PistetietoWrapper
         :summary "Hakemuksen pistetiedot"
-        (ok (p/fetch-hakemuksen-pistetiedot datasource hakuOID hakemusOID)))
+          (ok (first (p/fetch-hakemusten-pistetiedot datasource hakuOID [hakemusOID]))))
+        
 
       (PUT "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
         [hakuOID hakukohdeOID]
         :body [uudet_pistetiedot [PistetietoWrapper]]
-        :return s/Int
         :summary "Syötä pistetiedot hakukohteen avaimilla"
-        (ok (p/update-pistetiedot datasource hakuOID hakukohdeOID uudet_pistetiedot))))))
+        (let [returns_nothing_if_succeeds (p/update-pistetiedot datasource hakuOID hakukohdeOID uudet_pistetiedot)]
+          (ok))))))
 
 (defn -main []
 

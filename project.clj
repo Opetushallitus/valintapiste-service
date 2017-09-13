@@ -34,6 +34,8 @@
    :aot [valintapiste-service.handler]
    :plugins [[lein-ring "0.12.0"]
              [lein-resource "14.10.2"]
+             [com.jakemccrary/lein-test-refresh "0.21.1"]
+             [lein-autoreload "0.1.1"]
              [lein-deploy-artifacts "0.1.0"]]
    :profiles {:uberjar {:prep-tasks ["compile" "resource"]}
               :testpostgres {:main valintapiste-service.testpostgres

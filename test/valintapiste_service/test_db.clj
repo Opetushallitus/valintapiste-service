@@ -3,7 +3,7 @@
 
 (defn pg-uri
     [config]
-    {:connection-timeout 1500
+    {:connection-timeout 2500
      :connection-uri (str "jdbc:postgresql://" 
                             (-> config :db :servername) 
                                 ":" (-> config :db :port) 
