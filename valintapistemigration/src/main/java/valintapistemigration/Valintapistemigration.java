@@ -7,8 +7,6 @@ import com.mongodb.reactivestreams.client.MongoDatabase;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bson.Document;
 import org.dalesbred.Database;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static valintapistemigration.DocumentToPisteet.*;
-import static valintapistemigration.SubscriptionHelper.*;
+import static valintapistemigration.DocumentToPisteet.documentToHakemus;
 import static valintapistemigration.SubscriptionHelper.subscriber;
 
 public class Valintapistemigration {
@@ -38,6 +36,7 @@ public class Valintapistemigration {
     private static final AtomicInteger NUMBER_OF_PISTEET_STORED_TO_POSTGRE = new AtomicInteger(0);
     private static final AtomicInteger NUMBER_OF_HAKEMUKSIA_STORED_TO_POSTGRE = new AtomicInteger(0);
     private static final String TALLENTAJA = "migraatio";
+    private static final int TARGET_BATCH_SIZE = 1000;
 
     public static void main(String[] args) {
         Optional<String> mongoURIarg = Stream.of(args).filter(a -> a.startsWith("mongoURI=")).map(a -> a.replaceFirst("mongoURI=", "")).findAny();
@@ -60,30 +59,22 @@ public class Valintapistemigration {
         waitFor(5);
 
         final ExecutorService executorService = Executors.newWorkStealingPool();
-        final ArrayBlockingQueue<Hakemus> queue = new ArrayBlockingQueue<>(1038346);
-        final Database postgresql = Database.forDataSource(datasource);
+        final ArrayBlockingQueue<List<ValintapisteDAO.PisteRow>> queue = new ArrayBlockingQueue<>(1038346);
+        final ValintapisteDAO dao = new ValintapisteDAO(TALLENTAJA, Database.forDataSource(datasource));
 
         Runnable storeDocumentToPostgresql = () -> {
             try {
-                LOG.info("Running PostgreSQL update! Taking from queue (size = {})", queue.size());
-                Hakemus hakemus = queue.take();
-                hakemus.pisteet.forEach(piste -> {
-                    LOG.debug("INSERTING {} {} {} {} {}", hakemus.hakemusOid, piste.tunniste, piste.arvo.orElse(null), piste.osallistuminen, TALLENTAJA);
-                    if(piste.arvo.isPresent()) {
-                        piste.arvo.ifPresent(arvo -> {
-                            postgresql.update("insert into valintapiste (hakemus_oid, tunniste, arvo, osallistuminen, tallettaja) VALUES (?,?,?,?::osallistumistieto,?)", hakemus.hakemusOid, piste.tunniste, piste.arvo.get(), piste.osallistuminen, TALLENTAJA);
-                        });
-                    } else {
-                        postgresql.update("insert into valintapiste (hakemus_oid, tunniste, osallistuminen, tallettaja) VALUES (?,?,?::osallistumistieto,?)", hakemus.hakemusOid, piste.tunniste,  piste.osallistuminen, TALLENTAJA);
-                    }
-                    NUMBER_OF_PISTEET_STORED_TO_POSTGRE.incrementAndGet();
-                });
-                NUMBER_OF_HAKEMUKSIA_STORED_TO_POSTGRE.incrementAndGet();
+
+                List<ValintapisteDAO.PisteRow> pisteRows = QueueUtil.gatherRowsUntilTargetBatchSize(queue, TARGET_BATCH_SIZE);
+                if(!pisteRows.isEmpty()) {
+                    LOG.info("Running PostgreSQL update! Batch updating {} rows!", pisteRows.size());
+                    dao.insertBatch(pisteRows);
+                    LOG.info("DONE INSERTING TO POSTGRESQL!");
+                    NUMBER_OF_HAKEMUKSIA_STORED_TO_POSTGRE.addAndGet(pisteRows.size());
+                }
             } catch (Throwable e) {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
-            } finally {
-                LOG.info("DONE INSERTING TO POSTGRESQL!");
             }
         };
 
@@ -96,11 +87,12 @@ public class Valintapistemigration {
             int i = NUMBER_OF_HAKEMUKSIA_MONGOSTA.incrementAndGet();
             long overall = NUMBER_OF_HAKEMUKSIA_IN_MONGO.get();
             LOG.info("PROCESSED! {} / {} which is {}%", i, overall, new BigDecimal((((double)i)/((double)overall)) * 100d, new MathContext(2, RoundingMode.HALF_EVEN)).toString());
-            Optional<Hakemus> hakemus = documentToHakemus(document);
-            hakemus.ifPresent(h -> {
+
+            Optional<List<ValintapisteDAO.PisteRow>> pisteRows = documentToRows(document);
+            pisteRows.ifPresent(rows -> {
                 NUMBER_OF_HAKEMUKSIA_WITH_PISTEET.incrementAndGet();
                 LOG.info("Adding to queue! (size = {})", queue.size());
-                queue.add(h);
+                queue.add(rows);
                 executorService.submit(storeDocumentToPostgresql);
             });
         };
@@ -115,8 +107,6 @@ public class Valintapistemigration {
         HikariDataSource ds = new HikariDataSource();
         ds.setMaximumPoolSize(4);
         ds.setJdbcUrl(uri);
-        //ds.setUsername(username);
-        //ds.setPassword(password);
         return ds;
     }
 
