@@ -44,6 +44,11 @@
     (context "/api" []
       :tags ["api"]
 
+      (GET "/healthcheck"
+        []
+        :summary "Healtcheck API"
+        (ok))
+
       (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
         [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :return [PistetietoWrapper]
