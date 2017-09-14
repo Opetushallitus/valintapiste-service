@@ -2,8 +2,8 @@
  :db {:schema "public"
       :servername "{{host_postgresql_valintapisteservice}}"
       :databasename "{{host_postgresql_valintapisteservice_dbname}}"
-      :username "{{valintapisteservice_db_user}}"
-      :password "{{valintapisteservice_db_password}}"
+      :username "{{host_postgresql_valintapisteservice_user}}"
+      :password "{{host_postgresql_valintapisteservice_password}}"
       :maximum-pool-size {{host_postgresql_valintapisteservice_max_active}}
       :port {{host_postgresql_valintapisteservice_port}}}
  :mongo {:uri mongodb://{{mongodb_hakemus_auth}}@{{mongodb_hakemus_host}}/hakulomake}
