@@ -10,6 +10,7 @@
         :database-name (-> config :db :databasename)
         :server-name   (-> config :db :servername)
         :port-number   (-> config :db :port)
+        :maximum-pool-size (-> config :db :maximum-pool-size)
         :adapter       POSTGRES_ADAPTER}))
 
 (defn -main [& args]

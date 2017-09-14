@@ -4,6 +4,7 @@
       :databasename "{{valintapisteservice_db_name}}"
       :username "{{valintapisteservice_db_username}}"
       :password "{{valintapisteservice_db_password}}"
+      :maximum-pool-size 10
       :port {{valintapisteservice_db_port}}}
  :server {:port {{palvelu_portti}}
           :base-url "/valintapiste-service"}}
