@@ -1,11 +1,11 @@
 {:host-virkailija "https://{{host_virkailija}}"
  :db {:schema "public"
-      :servername "{{valintapisteservice_db_host}}"
-      :databasename "{{valintapisteservice_db_name}}"
+      :servername "{{host_postgresql_valintapisteservice}}"
+      :databasename "{{host_postgresql_valintapisteservice_dbname}}"
       :username "{{valintapisteservice_db_username}}"
       :password "{{valintapisteservice_db_password}}"
-      :maximum-pool-size 10
-      :port {{valintapisteservice_db_port}}}
- :mongo {:uri {{mongouri}}}
+      :maximum-pool-size {{host_postgresql_valintapisteservice_max_active}}
+      :port {{host_postgresql_valintapisteservice_port}}}
+ :mongo {:uri mongodb://{{mongodb_hakemus_auth}}@{{mongodb_hakemus_host}}/hakulomake}
  :server {:port {{palvelu_portti}}
           :base-url "/valintapiste-service"}}
