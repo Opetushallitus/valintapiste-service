@@ -7,8 +7,8 @@
 
 (defn connection 
     "Establish connection with MongoURI"
-    [uri]
-    (mg/connect-via-uri uri))
+    [config]
+    (mg/connect-via-uri (-> config :mongo :uri)))
 
 (defn hakemusOidsForHakukohde
     "Fetch all active 'hakemus OIDs' in 'hakukohde'"
