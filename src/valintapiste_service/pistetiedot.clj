@@ -1,6 +1,5 @@
 (ns valintapiste-service.pistetiedot
-  (:require [jeesql.core :refer [defqueries]]
-            [valintapiste-service.haku.haku :as hakuapp]))
+  (:require [jeesql.core :refer [defqueries]]))
 
 (defqueries "queries.sql")
 
