@@ -4,6 +4,7 @@
             [valintapiste-service.config :as c]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer :all]
+            [clj-log4j2.core :as log]
             [valintapiste-service.pool :as pool]
             [schema.core :as s]
             [valintapiste-service.hakuapp :as mongo]
@@ -20,6 +21,15 @@
   {:hakemusOID s/Str
    :pisteet [Pistetieto]})
 
+(defn throwIfNullsInAuditSession [auditSession] 
+  (if (not-any? nil? auditSession) 
+    :default
+    (throw (Exception. "Mandatory query params missing! (sessionId uid inetAddress userAgent)"))))
+
+(defn logAuditSession [sessionId uid inetAddress userAgent] 
+  (do (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
+    (log/info "AuditSession {} {} {} {}" sessionId uid inetAddress userAgent)))
+
 (defn app
   "This is the App"
   [hakuapp datasource]
@@ -35,25 +45,30 @@
       :tags ["api"]
 
       (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
-        [hakuOID hakukohdeOID]
+        [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :return [PistetietoWrapper]
         :summary "Hakukohteen hakemusten pistetiedot"
-        (ok (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)))
+        (do 
+          (logAuditSession sessionId uid inetAddress userAgent)
+          (ok (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID))))
         
 
       (GET "/haku/:hakuOID/hakemus/:hakemusOID" 
-        [hakuOID hakemusOID]
+        [hakuOID hakemusOID sessionId uid inetAddress userAgent]
         :return PistetietoWrapper
         :summary "Hakemuksen pistetiedot"
-          (ok (first (p/fetch-hakemusten-pistetiedot datasource hakuOID [hakemusOID]))))
-        
+        (do 
+          (logAuditSession sessionId uid inetAddress userAgent)
+          (ok (first (p/fetch-hakemusten-pistetiedot datasource hakuOID [hakemusOID])))))
 
       (PUT "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
-        [hakuOID hakukohdeOID]
+        [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :body [uudet_pistetiedot [PistetietoWrapper]]
         :summary "Syötä pistetiedot hakukohteen avaimilla"
-        (let [returns_nothing_if_succeeds (p/update-pistetiedot datasource hakuOID hakukohdeOID uudet_pistetiedot)]
-          (ok))))))
+        (do 
+          (logAuditSession sessionId uid inetAddress userAgent)
+          (let [returns_nothing_if_succeeds (p/update-pistetiedot datasource hakuOID hakukohdeOID uudet_pistetiedot)]
+            (ok)))))))
 
 (defn -main []
 
