@@ -32,7 +32,7 @@
 
 (defn app
   "This is the App"
-  [hakuapp datasource]
+  [hakuapp datasource basePath]
   (api
     {:swagger
      {:ui "/"
@@ -41,13 +41,13 @@
                     :description "Pistetiedot"}
              }}}
 
-    (context "/api" []
+    (context (str basePath "/api") []
       :tags ["api"]
 
       (GET "/healthcheck"
         []
         :summary "Healtcheck API"
-        (ok))
+        (ok "OK"))
 
       (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
         [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
@@ -82,5 +82,6 @@
         mongoConnection (mongo/connection config)
         ]
     (db/migrate datasource)
-    (run-jetty (app (partial mongo/hakemusOidsForHakukohde {:db mongoConnection}) datasource) {:port (-> config :server :port)}) ))
+    (run-jetty (app (partial mongo/hakemusOidsForHakukohde {:db mongoConnection}) datasource "/valintapiste-service") {
+      :port (-> config :server :port)}) ))
 
