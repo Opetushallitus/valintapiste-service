@@ -2,7 +2,7 @@
  :db {:schema "public"
       :servername "{{host_postgresql_valintapisteservice}}"
       :databasename "{{host_postgresql_valintapisteservice_dbname}}"
-      :username "{{valintapisteservice_db_username}}"
+      :username "{{valintapisteservice_db_user}}"
       :password "{{valintapisteservice_db_password}}"
       :maximum-pool-size {{host_postgresql_valintapisteservice_max_active}}
       :port {{host_postgresql_valintapisteservice_port}}}
