@@ -85,11 +85,10 @@
         (is (= (:status response) 200))
         (is (= body [{:hakemusOID "1.2.3.4", :pisteet []}]))))
 
+
     (testing "Test GET /haku/.../hakemus/... returns hakemuksen pistetiedot"
       (let [response ((app mockedMongo datasource) (-> (mock/request :get "/api/haku/1.2.3.4/hakemus/1.2.3.4" auditSession)))
             body     (parse-body (:body response))]
-        (prn response)
-        (prn body)
         (is (= (:status response) 200))
         (is (= body {:hakemusOID "1.2.3.4" :pisteet []}))))
         

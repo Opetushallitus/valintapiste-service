@@ -73,7 +73,6 @@
 (defn -main []
 
   (let [config (c/readConfigurationFile)
-        abc (prn (-> config :db :password))
         datasource (pool/datasource config)
         mongoConnection (mongo/connection config)
         ]
