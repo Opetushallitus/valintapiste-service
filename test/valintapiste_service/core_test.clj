@@ -109,4 +109,3 @@
                           (mock/query-string auditSession)
                           (mock/content-type "application/json")))]
         (is (= (:status response) 200))))))
-    

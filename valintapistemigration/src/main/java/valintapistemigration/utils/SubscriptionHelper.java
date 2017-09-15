@@ -1,4 +1,4 @@
-package valintapistemigration;
+package valintapistemigration.utils;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;

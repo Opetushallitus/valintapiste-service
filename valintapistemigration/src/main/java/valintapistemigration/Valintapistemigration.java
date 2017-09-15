@@ -9,32 +9,25 @@ import org.bson.Document;
 import org.dalesbred.Database;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import valintapistemigration.utils.ProcessCounter;
+import valintapistemigration.utils.QueueUtil;
+import valintapistemigration.utils.ValintapisteDAO;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static valintapistemigration.DocumentToPisteet.*;
-import static valintapistemigration.DocumentToPisteet.documentToHakemus;
-import static valintapistemigration.SubscriptionHelper.subscriber;
+import static valintapistemigration.utils.DocumentToPisteet.*;
+import static valintapistemigration.utils.SubscriptionHelper.subscriber;
 
 public class Valintapistemigration {
     private static final Logger LOG = LoggerFactory.getLogger(Valintapistemigration.class);
-    private static final AtomicInteger NUMBER_OF_HAKEMUKSIA_MONGOSTA = new AtomicInteger(0);
-    private static final AtomicInteger NUMBER_OF_HAKEMUKSIA_WITH_PISTEET = new AtomicInteger(0);
-    private static final AtomicLong NUMBER_OF_HAKEMUKSIA_IN_MONGO = new AtomicLong(-1);
-    private static final AtomicInteger NUMBER_OF_PISTEET_STORED_TO_POSTGRE = new AtomicInteger(0);
-    private static final AtomicInteger NUMBER_OF_HAKEMUKSIA_STORED_TO_POSTGRE = new AtomicInteger(0);
+    private static final ProcessCounter COUNTER = new ProcessCounter();
     private static final String TALLENTAJA = "migraatio";
     private static final int TARGET_BATCH_SIZE = 1000;
 
@@ -63,42 +56,46 @@ public class Valintapistemigration {
         final ValintapisteDAO dao = new ValintapisteDAO(TALLENTAJA, Database.forDataSource(datasource));
 
         Runnable storeDocumentToPostgresql = () -> {
+            Map.Entry<Long, List<ValintapisteDAO.PisteRow>> hakemuksiaLuettuJaPisteitä = QueueUtil.gatherRowsUntilTargetBatchSize(queue, TARGET_BATCH_SIZE);
+            final Long hakemuksiaLuettu = hakemuksiaLuettuJaPisteitä.getKey();
+            final List<ValintapisteDAO.PisteRow> pisteRows = hakemuksiaLuettuJaPisteitä.getValue();
             try {
-
-                List<ValintapisteDAO.PisteRow> pisteRows = QueueUtil.gatherRowsUntilTargetBatchSize(queue, TARGET_BATCH_SIZE);
-                if(!pisteRows.isEmpty()) {
+                if (!pisteRows.isEmpty()) {
                     LOG.info("Running PostgreSQL update! Batch updating {} rows!", pisteRows.size());
                     dao.insertBatch(pisteRows);
-                    LOG.info("DONE INSERTING TO POSTGRESQL!");
-                    NUMBER_OF_HAKEMUKSIA_STORED_TO_POSTGRE.addAndGet(pisteRows.size());
+                    LOG.debug("DONE INSERTING TO POSTGRESQL!");
                 }
             } catch (Throwable e) {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
+                COUNTER.hakemuksenKäsittelyEpäonnistui(hakemuksiaLuettu);
+            } finally {
+                COUNTER.hakemusKäsitelty(hakemuksiaLuettu);
             }
         };
 
         MongoDatabase database = mongoClient.getDatabase("hakulomake");
         MongoCollection<Document> collection = database.getCollection("application");
 
-        collection.count().subscribe(subscriber(count -> NUMBER_OF_HAKEMUKSIA_IN_MONGO.set(count)));
+        collection.count().subscribe(subscriber(count -> COUNTER.setHakemuksiaMongossa(count)));
 
         Consumer<Document> handleDocument = (document) -> {
-            int i = NUMBER_OF_HAKEMUKSIA_MONGOSTA.incrementAndGet();
-            long overall = NUMBER_OF_HAKEMUKSIA_IN_MONGO.get();
-            LOG.info("PROCESSED! {} / {} which is {}%", i, overall, new BigDecimal((((double)i)/((double)overall)) * 100d, new MathContext(2, RoundingMode.HALF_EVEN)).toString());
-
-            Optional<List<ValintapisteDAO.PisteRow>> pisteRows = documentToRows(document);
-            pisteRows.ifPresent(rows -> {
-                NUMBER_OF_HAKEMUKSIA_WITH_PISTEET.incrementAndGet();
-                LOG.info("Adding to queue! (size = {})", queue.size());
-                queue.add(rows);
+            COUNTER.hakemusLuettuMongosta();
+            List<ValintapisteDAO.PisteRow> pisteRows = documentToRows(document);
+            boolean hakemuksellaTallennettaviaPisteita = pisteRows.isEmpty();
+            if(hakemuksellaTallennettaviaPisteita) {
+                LOG.debug("Adding to queue! (size = {})", queue.size());
+                queue.add(pisteRows);
                 executorService.submit(storeDocumentToPostgresql);
-            });
+            } else { // skipping hakemus with no pisteet
+                COUNTER.hakemusKäsitelty(1L);
+            }
         };
         collection.find().subscribe(subscriber(handleDocument));
 
-        waitFor(TimeUnit.DAYS.toSeconds(7)); // try maximum of week to complete the migration
+        waitFor(TimeUnit.DAYS.toSeconds(7), () -> {
+            return String.format("(queue size currently = %s) %s", queue.size(), COUNTER.toString());
+        });
     }
 
 
@@ -111,16 +108,19 @@ public class Valintapistemigration {
     }
 
     public static void waitFor(long seconds) {
-        if(seconds <= 0) {
+        waitFor(seconds, () -> "");
+    }
 
-        } else {
-            LOG.warn("...{}", seconds);
+    public static void waitFor(long seconds, Supplier<String> info) {
+        long s = seconds;
+        while(s > 0) {
+            LOG.warn("...{} {}", s, info.get());
             try {
                 Thread.sleep(1000L);
             } catch (Exception e) {
 
             }
-            waitFor(seconds -1);
+            s = s - 1;
         }
     }
 }

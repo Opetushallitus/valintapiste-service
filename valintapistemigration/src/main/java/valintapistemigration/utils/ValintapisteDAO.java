@@ -1,4 +1,4 @@
-package valintapistemigration;
+package valintapistemigration.utils;
 
 import com.google.common.collect.Lists;
 import org.dalesbred.Database;
