@@ -12,7 +12,8 @@
   (:gen-class))
 
 (s/defschema Pistetieto
-  {:tunniste s/Str
+  {;:aikaleima s/Str
+   :tunniste s/Str
    :arvo s/Str
    :osallistuminen s/Str
    :tallettaja s/Str})
@@ -55,7 +56,10 @@
         :summary "Hakukohteen hakemusten pistetiedot"
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
-          (ok (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID))))
+          (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
+                last-modified (-> data :last-modified)
+                hakemukset (-> data :hakemukset)]
+            (ok hakemukset))))
         
 
       (GET "/haku/:hakuOID/hakemus/:hakemusOID" 
@@ -64,7 +68,10 @@
         :summary "Hakemuksen pistetiedot"
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
-          (ok (first (p/fetch-hakemusten-pistetiedot datasource hakuOID [hakemusOID])))))
+          (let [data (p/fetch-hakemusten-pistetiedot datasource hakuOID [hakemusOID])
+                last-modified (-> data :last-modified)
+                hakemukset (-> data :hakemukset)]
+            (ok (first hakemukset)))))
 
       (PUT "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
         [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]

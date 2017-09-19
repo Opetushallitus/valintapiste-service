@@ -13,6 +13,7 @@
                   [com.novemberain/monger "3.1.0"]
                   [org.postgresql/postgresql "9.4.1208"]
                   [hikari-cp "1.7.6"]
+                  [clj-time "0.14.0"]
                   [org.apache.logging.log4j/log4j-api "2.9.0"]
                   [org.apache.logging.log4j/log4j-core "2.9.0"]
                   [org.apache.logging.log4j/log4j-slf4j-impl "2.9.0"]

@@ -36,7 +36,12 @@
   (cheshire/parse-string (slurp body) true))
 
 (defn- insert-test-data []
-  (let [test-data [{:hakemusOID "testi-hakemus-1"
+  (let [test-data [{:hakemusOID "UPDATE_TEST"
+                    :pisteet [{:tunniste "TRY_TO_UPDATE"
+                              :arvo "UPDATE_FAILED!"
+                              :osallistuminen "OSALLISTUI"
+                              :tallettaja "1.2.3.4"}]}
+                   {:hakemusOID "testi-hakemus-1"
                     :pisteet [{:tunniste "piste-1"
                                :arvo "10"
                                :osallistuminen "OSALLISTUI"
@@ -93,7 +98,12 @@
         (is (= body {:hakemusOID "1.2.3.4" :pisteet []}))))
         
     (testing "Test PUT /haku/.../hakukohde/... put pistetiedot for 'hakukohteen tunnisteet'"
-      (let [json-body (generate-string [{:hakemusOID "1"
+      (let [json-body (generate-string [{:hakemusOID "UPDATE_TEST"
+                                          :pisteet [{ :tunniste "TRY_TO_UPDATE"
+                                                      :arvo "UPDATE_SUCCEEDED!"
+                                                      :osallistuminen "OSALLISTUI"
+                                                      :tallettaja "1.2.3.4"}]}
+                                        {:hakemusOID "1"
                                         :pisteet [{ :tunniste "A"
                                                     :arvo "A"
                                                     :osallistuminen "OSALLISTUI"
@@ -109,3 +119,4 @@
                           (mock/query-string auditSession)
                           (mock/content-type "application/json")))]
         (is (= (:status response) 200))))))
+
