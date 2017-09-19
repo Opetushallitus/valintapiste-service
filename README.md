@@ -10,7 +10,7 @@ FIXME
 
 ### Run the tests
 
-`lein test`
+`lein test` or `lein test-refresh` to run tests automatically every time code updates.
 
 To run tests little bit faster:
 `export LEIN_FAST_TRAMPOLINE=1`
