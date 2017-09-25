@@ -82,7 +82,7 @@ public class Valintapistemigration {
         Consumer<Document> handleDocument = (document) -> {
             COUNTER.hakemusLuettuMongosta();
             List<ValintapisteDAO.PisteRow> pisteRows = documentToRows(document);
-            boolean hakemuksellaTallennettaviaPisteita = pisteRows.isEmpty();
+            boolean hakemuksellaTallennettaviaPisteita = !pisteRows.isEmpty();
             if(hakemuksellaTallennettaviaPisteita) {
                 LOG.debug("Adding to queue! (size = {})", queue.size());
                 queue.add(pisteRows);
