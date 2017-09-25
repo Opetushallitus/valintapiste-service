@@ -12,12 +12,12 @@
                   [ring/ring-jetty-adapter "1.6.2"]
                   [com.novemberain/monger "3.1.0"]
                   [org.postgresql/postgresql "9.4.1208"]
-                  [hikari-cp "1.7.6"]
+                  [hikari-cp "1.8.0"]
                   [clj-time "0.14.0"]
                   [org.apache.logging.log4j/log4j-api "2.9.0"]
                   [org.apache.logging.log4j/log4j-core "2.9.0"]
                   [org.apache.logging.log4j/log4j-slf4j-impl "2.9.0"]
-                  [clj-log4j2 "0.1.1"]
+                  [clj-log4j2 "0.2.0"]
                   [org.flywaydb/flyway-core "4.2.0"]
                   [webjure/jeesql "0.4.6"]]
    :prep-tasks ["compile"]
@@ -46,5 +46,5 @@
                                   [cheshire "5.8.0"]
                                   [org.clojure/java.jdbc "0.7.1"]
                                   [ru.yandex.qatools.embed/postgresql-embedded "2.4"]
-                                  [ring/ring-mock "0.3.0"]]}})
+                                  [ring/ring-mock "0.3.1"]]}})
 
