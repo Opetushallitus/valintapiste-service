@@ -37,7 +37,8 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.4.1208</version>
+            <version>42.1.4</version>
+            <!-- ConnectionFactoryImpl.java:265 -->
         </dependency>
         <dependency>
             <groupId>org.dalesbred</groupId>
@@ -53,6 +54,11 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>2.9.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.7.25</version>
         </dependency>
     </dependencies>
 

@@ -11,6 +11,9 @@
             [valintapiste-service.db :as db])
   (:gen-class))
 
+(def jul-over-slf4j (do (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
+                        (org.slf4j.bridge.SLF4JBridgeHandler/install)))
+
 (s/defschema Pistetieto
   {;:aikaleima s/Str
    :tunniste s/Str
