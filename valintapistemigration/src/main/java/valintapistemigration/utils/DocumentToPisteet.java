@@ -21,11 +21,7 @@ public class DocumentToPisteet {
             if (k.endsWith("-OSALLISTUMINEN")) {
                 String tunniste = k.replaceAll("-OSALLISTUMINEN", "");
                 String osallistuminen = v.toString();
-                if(!"MERKITSEMATTA".equals(osallistuminen)) {
-                    return Stream.of(new ValintapisteDAO.PisteRow(oid, tunniste,(String)additionalInfo.get(tunniste), osallistuminen));
-                } else {
-                    return Stream.empty();
-                }
+                return Stream.of(new ValintapisteDAO.PisteRow(oid, tunniste,(String)additionalInfo.get(tunniste), osallistuminen));
             } else {
                 return Stream.empty();
             }

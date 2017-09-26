@@ -1,7 +1,7 @@
 create type osallistumistieto as enum (
     'EI_OSALLISTUNUT',
     'OSALLISTUI',
-    'MÄÄRITTELEMÄTTÄ'
+    'MERKITSEMATTA'
 );
 
 create table valintapiste (
