@@ -51,8 +51,8 @@ public class Valintapistemigration {
 
         waitFor(5);
 
-        final ExecutorService executorService = Executors.newWorkStealingPool();
-        final ArrayBlockingQueue<List<ValintapisteDAO.PisteRow>> queue = new ArrayBlockingQueue<>(1038346);
+        final ExecutorService executorService = Executors.newFixedThreadPool(4);
+        final ArrayBlockingQueue<List<ValintapisteDAO.PisteRow>> queue = new ArrayBlockingQueue<>(18346);
         final ValintapisteDAO dao = new ValintapisteDAO(TALLENTAJA, Database.forDataSource(datasource));
 
         Runnable storeDocumentToPostgresql = () -> {
