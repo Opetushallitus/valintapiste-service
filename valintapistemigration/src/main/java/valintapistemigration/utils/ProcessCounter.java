@@ -44,7 +44,7 @@ public class ProcessCounter {
     private String formatAsPercentage(long a, long b) {
         BigDecimal ba = new BigDecimal(a);
         BigDecimal bb = new BigDecimal(b);
-        BigDecimal res = ba.multiply(new BigDecimal(100)).divide(bb, new MathContext(2, RoundingMode.HALF_EVEN));
+        BigDecimal res = ba.multiply(new BigDecimal(100)).divide(bb, 2, RoundingMode.HALF_UP);
         return String.format("%s / %s which is %s%%", a, b, res.toString());
     }
 
