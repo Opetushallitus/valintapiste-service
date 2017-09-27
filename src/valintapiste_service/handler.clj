@@ -18,7 +18,7 @@
   {;:aikaleima s/Str
    :tunniste s/Str
    :arvo s/Str
-   :osallistuminen s/Str
+   :osallistuminen (s/enum "EI_OSALLISTUNUT" "OSALLISTUI" "EI_VAADITA" "MERKITSEMATTA")
    :tallettaja s/Str})
 
 (s/defschema PistetietoWrapper
