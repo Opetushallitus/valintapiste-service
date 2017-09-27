@@ -69,14 +69,15 @@
 (def auditSession {:sessionId "sID" :uid "uID" :inetAddress "1.2.3.4" :userAgent "uAgent"})
 
 (deftest valintapiste-tests
-  (let [mockedMongo (fn [hakuOID hakukohdeOID] ["testi-hakemus-1" "1.2.3.4"])]
+  (let [mockedMongo (fn [hakuOID hakukohdeOID] [{:oid "testi-hakemus-1" :personOid "1.2.3.4"} {:oid "1.2.3.4" :personOid "1.2.3.4"}])]
     (testing "Test GET /haku/.../hakukohde/... returns list of hakukohteen pistetiedot"
       (let [response ((app mockedMongo datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
         (is (= body [{:hakemusOID "testi-hakemus-1", 
+                      :oppijaOID "1.2.3.4"
                       :pisteet [{:tunniste "piste-1", :arvo "10", :osallistuminen "OSALLISTUI", :tallettaja "1.2.3.4"}]} 
-                     {:hakemusOID "1.2.3.4", :pisteet []}]))))
+                     {:hakemusOID "1.2.3.4", :oppijaOID "1.2.3.4" :pisteet []}]))))
 
     (testing "Test GET /haku/.../hakukohde/... returns empty pistetiedot"
       (let [response ((app (fn [hakuOID hakukohdeOID] []) datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
@@ -85,17 +86,17 @@
         (is (= body []))))
 
     (testing "Test GET /haku/.../hakukohde/... returns one pistetieto"
-      (let [response ((app (fn [hakuOID hakukohdeOID] ["1.2.3.4"]) datasource "") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+      (let [response ((app (fn [hakuOID hakukohdeOID] [{:oid "1.2.3.4" :personOid "1.2.3.5"}]) datasource "") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
-        (is (= body [{:hakemusOID "1.2.3.4", :pisteet []}]))))
+        (is (= body [{:hakemusOID "1.2.3.4", :oppijaOID "1.2.3.5" :pisteet []}]))))
 
 
     (testing "Test GET /haku/.../hakemus/... returns hakemuksen pistetiedot"
-      (let [response ((app mockedMongo datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakemus/1.2.3.4" auditSession)))
+      (let [response ((app mockedMongo datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakemus/1.2.3.4/oppija/1.2.3.6" auditSession)))
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
-        (is (= body {:hakemusOID "1.2.3.4" :pisteet []}))))
+        (is (= body {:hakemusOID "1.2.3.4" :oppijaOID "1.2.3.6" :pisteet []}))))
         
     (testing "Test PUT /haku/.../hakukohde/... put pistetiedot for 'hakukohteen tunnisteet'"
       (let [json-body (generate-string [{:hakemusOID "UPDATE_TEST"

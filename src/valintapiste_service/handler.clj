@@ -23,6 +23,7 @@
 
 (s/defschema PistetietoWrapper
   {:hakemusOID s/Str
+   (s/optional-key :oppijaOID) s/Str
    :pisteet [Pistetieto]})
 
 (defn throwIfNullsInAuditSession [auditSession] 
@@ -62,16 +63,18 @@
           (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
-            (ok hakemukset))))
+                (do (prn "---")
+                (prn hakemukset)
+            (ok hakemukset)))))
         
 
-      (GET "/haku/:hakuOID/hakemus/:hakemusOID" 
-        [hakuOID hakemusOID sessionId uid inetAddress userAgent]
+      (GET "/haku/:hakuOID/hakemus/:hakemusOID/oppija/:oppijaOID" 
+        [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
         :return PistetietoWrapper
         :summary "Hakemuksen pistetiedot"
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
-          (let [data (p/fetch-hakemusten-pistetiedot datasource hakuOID [hakemusOID])
+          (let [data (p/fetch-hakemusten-pistetiedot datasource hakuOID [{:oid hakemusOID :personOid oppijaOID}])
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
             (ok (first hakemukset)))))
