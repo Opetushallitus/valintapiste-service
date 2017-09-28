@@ -1,7 +1,5 @@
 # valintapiste-service
 
-FIXME
-
 ## Usage
 
 ### Run the application locally
