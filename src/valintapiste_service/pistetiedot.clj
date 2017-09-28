@@ -12,15 +12,20 @@
                                  {:hakemusOID hakemus_oid
                                   :pisteet (map (fn [p] (dissoc p :hakemus_oid)) pisteet)}) ) group-by-hakemus-oid) ))
 
+(defn add-to-entry [new_entries entry]
+  (let [not_nil_new_entries (into {} (filter (comp some? val) new_entries))]
+    (merge not_nil_new_entries entry)))
+
 (defn add-oppija-oid [hakemus-oid-to-hakemus hakemukset]
-  (do 
-    ;(prn "---")
-    ;(prn hakemus-oid-to-hakemus)
   (map (fn [entry] 
     (let [hakemusOID (-> entry :hakemusOID)
           hakemus (hakemus-oid-to-hakemus hakemusOID)
-          oppijaOID (-> hakemus :personOid)]
-      (assoc entry :oppijaOID oppijaOID))) hakemukset)))
+          oppijaOID (-> hakemus :personOid)
+          etunimet (get-in hakemus [:answers :henkilotiedot :Etunimet] nil)
+          sukunimi (get-in hakemus [:answers :henkilotiedot :Sukunimi] nil)]
+      (add-to-entry { :oppijaOID oppijaOID
+                      :etunimet etunimet
+                      :sukunimi sukunimi } entry))) hakemukset))
 
 (defn fetch-hakemusten-pistetiedot 
     "Returns pistetiedot for hakemus"

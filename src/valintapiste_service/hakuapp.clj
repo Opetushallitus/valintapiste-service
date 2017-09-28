@@ -20,4 +20,4 @@
                 "authorizationMeta.applicationPreferences.preferenceData.Koulutus-id" hakukohdeOID
                 "state" { $in ["ACTIVE", "INCOMPLETE"] }
                 })
-            (mq/fields ["oid" "personOid"]))))
+            (mq/fields ["oid" "personOid" "answers.henkilotiedot.Etunimet" "answers.henkilotiedot.Sukunimi"]))))

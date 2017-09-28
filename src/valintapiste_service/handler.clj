@@ -23,6 +23,8 @@
 
 (s/defschema PistetietoWrapper
   {:hakemusOID s/Str
+   (s/optional-key :sukunimi) s/Str
+   (s/optional-key :etunimet) s/Str
    (s/optional-key :oppijaOID) s/Str
    :pisteet [Pistetieto]})
 
@@ -63,10 +65,7 @@
           (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
-                (do (prn "---")
-                (prn hakemukset)
-            (ok hakemukset)))))
-        
+            (ok hakemukset))))
 
       (GET "/haku/:hakuOID/hakemus/:hakemusOID/oppija/:oppijaOID" 
         [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
