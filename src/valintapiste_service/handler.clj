@@ -95,6 +95,6 @@
         mongoConnection (mongo/connection config)
         ]
     (db/migrate datasource)
-    (run-jetty (app (partial mongo/hakemusOidsForHakukohde {:db mongoConnection}) datasource "/valintapiste-service") {
+    (run-jetty (app (partial mongo/hakemusOidsForHakukohde (-> mongoConnection :db)) datasource "/valintapiste-service") {
       :port (-> config :server :port)}) ))
 
