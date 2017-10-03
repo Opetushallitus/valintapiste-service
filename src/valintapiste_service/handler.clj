@@ -67,6 +67,18 @@
                 hakemukset (-> data :hakemukset)]
             (ok hakemukset))))
 
+      (POST "/haku/:hakuOID/pisteet-with-hakemusoids" 
+        [hakuOID sessionId uid inetAddress userAgent]
+        :body [hakemusoids [s/Str]]
+        :return [PistetietoWrapper]
+        :summary "Hakukohteen hakemusten pistetiedot"
+        (do 
+          (logAuditSession sessionId uid inetAddress userAgent)
+          (let [data (p/fetch-hakemusten-pistetiedot datasource hakuOID (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
+                last-modified (-> data :last-modified)
+                hakemukset (-> data :hakemukset)]
+            (ok hakemukset))))
+
       (GET "/haku/:hakuOID/hakemus/:hakemusOID/oppija/:oppijaOID" 
         [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
         :return PistetietoWrapper

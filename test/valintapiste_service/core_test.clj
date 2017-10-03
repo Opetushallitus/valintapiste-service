@@ -97,7 +97,17 @@
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
         (is (= body {:hakemusOID "1.2.3.4" :oppijaOID "1.2.3.6" :pisteet []}))))
-        
+    
+    (testing "Test POST /haku/.../pisteet-with-hakemusoids"
+      (let [json-body (generate-string ["1.2.3.4"])
+            response ((app mockedMongo datasource "") 
+                      (-> (mock/request :post "/api/haku/1.2.3.4/pisteet-with-hakemusoids" json-body)
+                          (mock/query-string auditSession)
+                          (mock/content-type "application/json")))
+            body     (parse-body (:body response))]
+        (is (= (:status response) 200))
+        (is (= body [{:hakemusOID "1.2.3.4" :oppijaOID "" :pisteet []}]))))
+
     (testing "Test PUT /haku/.../hakukohde/... put pistetiedot for 'hakukohteen tunnisteet'"
       (let [json-body (generate-string [{:hakemusOID "UPDATE_TEST"
                                           :pisteet [{ :tunniste "TRY_TO_UPDATE"
