@@ -34,7 +34,7 @@
           hakemusOIDs (map (-> :oid) hakemukset)
           hakemus-oid-to-hakemus (zipmap (map :oid hakemukset) hakemukset)
           data (jdbc/with-db-transaction [tx connection] 
-            {:last-modified (last-modified-for-hakemukset tx {:hakemus-oids hakemusOIDs})
+            {:last-modified (new org.joda.time.DateTime (first (map (fn [i] (-> :lower i)) (last-modified-for-hakemukset tx {:hakemus-oids hakemusOIDs}))))
              :rows (find-valintapisteet-for-hakemukset tx {:hakemus-oids hakemusOIDs})})
           by-hakemus-oid (add-oppija-oid hakemus-oid-to-hakemus (parse-rows-by-hakemus-oid (-> data :rows)))
           found-hakemus-oids (map :hakemusOID by-hakemus-oid)
@@ -50,15 +50,23 @@
   (let [hakemukset (hakuapp hakuOID hakukohdeOID)]
         (fetch-hakemusten-pistetiedot datasource hakuOID hakemukset)))
 
+(defn check-update-conflict [tx hakemusOIDs unmodified-since] 
+  (if unmodified-since 
+    (map (fn [hakemus] (-> hakemus :hakemus_oid)) (modified-since-hakemukset tx {:hakemus-oids hakemusOIDs :unmodified-since unmodified-since}))
+    []))
+
 (defn update-pistetiedot
   "Updates pistetiedot"
-  [datasource hakuOID hakukohdeOID pistetietowrappers]
-  (let [connection {:datasource datasource}]
-    (doseq [hakemus pistetietowrappers
-            piste (:pisteet hakemus)]
-            (let [hakemusOID (:hakemusOID hakemus)
-                  osallistuminen (doto (org.postgresql.util.PGobject.)
-                                    (.setType "osallistumistieto")
-                                    (.setValue (:osallistuminen piste)))
-                  row (merge piste {:hakemus-oid hakemusOID :osallistuminen osallistuminen})]
-                (upsert-valintapiste! connection row)))))
+  [datasource hakuOID hakukohdeOID pistetietowrappers unmodified-since]
+  (let [connection {:datasource datasource}
+        hakemusOIDs (map (fn [hakemus] (-> hakemus :hakemusOID)) pistetietowrappers)
+        data (jdbc/with-db-transaction [tx connection] 
+          (let [conflicting-hakemus-oids (check-update-conflict tx hakemusOIDs unmodified-since)]
+            (if (empty? conflicting-hakemus-oids) (doseq [hakemus pistetietowrappers
+                        piste (:pisteet hakemus)]
+                        (let [hakemusOID (:hakemusOID hakemus)
+                              osallistuminen (doto (org.postgresql.util.PGobject.)
+                                                (.setType "osallistumistieto")
+                                                (.setValue (:osallistuminen piste)))
+                              row (merge piste {:hakemus-oid hakemusOID :osallistuminen osallistuminen})]
+                            (upsert-valintapiste! tx row))) conflicting-hakemus-oids)))] data))

@@ -37,6 +37,9 @@
   (do (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
     (log/info "AuditSession {} {} {} {}" sessionId uid inetAddress userAgent)))
 
+(defn add-last-modified [response last-modified] 
+  (if last-modified (header response "Last-Modified" last-modified) response))
+
 (defn app
   "This is the App"
   [hakuapp datasource basePath]
@@ -65,7 +68,7 @@
           (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
-            (ok hakemukset))))
+            (add-last-modified (ok hakemukset) last-modified))))
 
       (POST "/haku/:hakuOID/pisteet-with-hakemusoids" 
         [hakuOID sessionId uid inetAddress userAgent]
@@ -77,7 +80,7 @@
           (let [data (p/fetch-hakemusten-pistetiedot datasource hakuOID (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
-            (ok hakemukset))))
+            (add-last-modified (ok hakemukset) last-modified))))
 
       (GET "/haku/:hakuOID/hakemus/:hakemusOID/oppija/:oppijaOID" 
         [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
@@ -88,16 +91,17 @@
           (let [data (p/fetch-hakemusten-pistetiedot datasource hakuOID [{:oid hakemusOID :personOid oppijaOID}])
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
-            (ok (first hakemukset)))))
+            (add-last-modified (ok (first hakemukset)) last-modified))))
 
       (PUT "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
-        [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
+        [ hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :body [uudet_pistetiedot [PistetietoWrapper]]
+        :headers [headers {s/Any s/Any}]
         :summary "Syötä pistetiedot hakukohteen avaimilla"
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
-          (let [returns_nothing_if_succeeds (p/update-pistetiedot datasource hakuOID hakukohdeOID uudet_pistetiedot)]
-            (ok)))))))
+          (let [conflicting-hakemus-oids (p/update-pistetiedot datasource hakuOID hakukohdeOID uudet_pistetiedot (-> headers :if-unmodified-since))]
+            (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids) )))))))
 
 (defn -main []
 

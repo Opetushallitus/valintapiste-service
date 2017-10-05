@@ -55,7 +55,7 @@
                                :arvo "5"
                                :osallistuminen "OSALLISTUI"
                                :tallettaja "1.2.3.4"}]}]]
-    (p/update-pistetiedot datasource "1.2.3.4" "1.2.3.4" test-data)))
+    (p/update-pistetiedot datasource "1.2.3.4" "1.2.3.4" test-data nil)))
 
 (defn valintapiste-test-fixture [f]
   (clean datasource)
@@ -72,6 +72,7 @@
   (let [mockedMongo (fn [hakuOID hakukohdeOID] [{:oid "testi-hakemus-1" :personOid "1.2.3.4"} {:oid "1.2.3.4" :personOid "1.2.3.4"}])]
     (testing "Test GET /haku/.../hakukohde/... returns list of hakukohteen pistetiedot"
       (let [response ((app mockedMongo datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+            headers (:headers response)
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
         (is (= body [{:hakemusOID "testi-hakemus-1", 
@@ -81,12 +82,15 @@
 
     (testing "Test GET /haku/.../hakukohde/... returns empty pistetiedot"
       (let [response ((app (fn [hakuOID hakukohdeOID] []) datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+            headers (:headers response)
             body     (parse-body (:body response))]
+            
         (is (= (:status response) 200))
         (is (= body []))))
 
     (testing "Test GET /haku/.../hakukohde/... returns one pistetieto"
       (let [response ((app (fn [hakuOID hakukohdeOID] [{:oid "1.2.3.4" :personOid "1.2.3.5"}]) datasource "") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+            headers (:headers response)
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
         (is (= body [{:hakemusOID "1.2.3.4", :oppijaOID "1.2.3.5" :pisteet []}]))))
@@ -94,6 +98,7 @@
 
     (testing "Test GET /haku/.../hakemus/... returns hakemuksen pistetiedot"
       (let [response ((app mockedMongo datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakemus/1.2.3.4/oppija/1.2.3.6" auditSession)))
+            headers (:headers response)
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
         (is (= body {:hakemusOID "1.2.3.4" :oppijaOID "1.2.3.6" :pisteet []}))))
@@ -104,6 +109,7 @@
                       (-> (mock/request :post "/api/haku/1.2.3.4/pisteet-with-hakemusoids" json-body)
                           (mock/query-string auditSession)
                           (mock/content-type "application/json")))
+            headers (:headers response)
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
         (is (= body [{:hakemusOID "1.2.3.4" :oppijaOID "" :pisteet []}]))))
@@ -128,6 +134,22 @@
             response ((app mockedMongo datasource "") 
                       (-> (mock/request :put "/api/haku/1.2.3.4/hakukohde/1.2.3.4" json-body)
                           (mock/query-string auditSession)
+                          (mock/header "If-Unmodified-Since" (.toString (org.joda.time.DateTime/now (org.joda.time.DateTimeZone/forID "Europe/Helsinki") ))) 
                           (mock/content-type "application/json")))]
-        (is (= (:status response) 200))))))
+        (is (= (:status response) 200))))
+
+    (testing "Test PUT /haku/.../hakukohde/... fails when too late"
+      (let [json-body (generate-string [{:hakemusOID "UPDATE_TEST"
+                                          :pisteet [{ :tunniste "TRY_TO_UPDATE"
+                                                      :arvo "UPDATE_SUCCEEDED!"
+                                                      :osallistuminen "OSALLISTUI"
+                                                      :tallettaja "1.2.3.4"}]}])
+            response ((app mockedMongo datasource "") 
+                      (-> (mock/request :put "/api/haku/1.2.3.4/hakukohde/1.2.3.4" json-body)
+                          (mock/query-string auditSession)
+                          (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00") 
+                          (mock/content-type "application/json")))
+            body     (parse-body (:body response))]
+        (is (= (:status response) 409))
+        (is (= body ["UPDATE_TEST"] ))))))
 

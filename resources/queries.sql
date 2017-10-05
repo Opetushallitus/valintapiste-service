@@ -7,6 +7,10 @@ select hakemus_oid, tunniste, arvo, osallistuminen, tallettaja from valintapiste
 -- Returns last-modified timestamp for multiple hakemusoids
 select lower(system_time) from valintapiste where hakemus_oid in (:hakemus-oids) order by lower(system_time) desc limit 1
 
+-- name: modified-since-hakemukset
+-- Returns last-modified timestamp for multiple hakemusoids
+select hakemus_oid from valintapiste where hakemus_oid in (:hakemus-oids) and lower(system_time) > :unmodified-since::timestamp
+
 -- name: upsert-valintapiste!
 -- Upserts valintapiste for specific hakemus oid and tunnus
 insert into valintapiste (hakemus_oid, tunniste, arvo, osallistuminen, tallettaja)
