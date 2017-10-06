@@ -4,7 +4,11 @@
 
 ### Run the application locally
 
-`lein ring server`
+`lein run`
+
+or
+
+`lein run valintapisteservice-properties=../my.edn`
 
 ### Run the tests
 

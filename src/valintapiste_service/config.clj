@@ -12,6 +12,6 @@
     "Reads configuration file"
     ([]
     (readConfigurationFromPath (env :valintapisteservice-properties)))
-    ([configFile]
-    (readConfigurationFromPath configFile)))
+    ([config-file]
+    (readConfigurationFromPath config-file)))
         

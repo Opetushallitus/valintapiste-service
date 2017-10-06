@@ -5,6 +5,7 @@
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer :all]
             [clj-log4j2.core :as log]
+            [clojure.string :as str]
             [valintapiste-service.pool :as pool]
             [schema.core :as s]
             [valintapiste-service.hakuapp :as mongo]
@@ -103,9 +104,17 @@
           (let [conflicting-hakemus-oids (p/update-pistetiedot datasource hakuOID hakukohdeOID uudet_pistetiedot (-> headers :if-unmodified-since))]
             (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids) )))))))
 
-(defn -main []
+(def config-property "valintapisteservice-properties")
 
-  (let [config (c/readConfigurationFile)
+(defn read-config-file-from-args [args] 
+    (first (filter some? 
+      (map (fn [arg] 
+        (if (str/starts-with? arg config-property) 
+          (subs arg (+ 1 (count config-property))) nil)) args))))
+
+(defn -main [& args]
+  (let [config-file (read-config-file-from-args args)
+        config (if (some? config-file) (c/readConfigurationFile config-file) (c/readConfigurationFile))
         datasource (pool/datasource config)
         mongoConnection (mongo/connection config)
         ]

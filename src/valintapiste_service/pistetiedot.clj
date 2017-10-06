@@ -27,6 +27,11 @@
                       :etunimet etunimet
                       :sukunimi sukunimi } entry))) hakemukset))
 
+(def europe-helsinki (org.joda.time.DateTimeZone/forID "Europe/Helsinki"))
+
+(defn convert-timestamp [sqldate] (if sqldate (let [joda (new org.joda.time.DateTime sqldate)
+                                               joda-with-zone (.withZone joda europe-helsinki)] joda-with-zone) nil))
+
 (defn fetch-hakemusten-pistetiedot 
     "Returns pistetiedot for hakemus"
     [datasource hakuOID hakemukset]
@@ -34,7 +39,7 @@
           hakemusOIDs (map (-> :oid) hakemukset)
           hakemus-oid-to-hakemus (zipmap (map :oid hakemukset) hakemukset)
           data (jdbc/with-db-transaction [tx connection] 
-            {:last-modified (new org.joda.time.DateTime (first (map (fn [i] (-> :lower i)) (last-modified-for-hakemukset tx {:hakemus-oids hakemusOIDs}))))
+            {:last-modified (convert-timestamp (first (map (fn [i] (-> :lower i)) (last-modified-for-hakemukset tx {:hakemus-oids hakemusOIDs}))))
              :rows (find-valintapisteet-for-hakemukset tx {:hakemus-oids hakemusOIDs})})
           by-hakemus-oid (add-oppija-oid hakemus-oid-to-hakemus (parse-rows-by-hakemus-oid (-> data :rows)))
           found-hakemus-oids (map :hakemusOID by-hakemus-oid)
