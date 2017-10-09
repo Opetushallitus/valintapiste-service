@@ -18,5 +18,6 @@ values (:hakemus-oid, :tunniste, :arvo, :osallistuminen, :tallettaja)
 on conflict (hakemus_oid, tunniste) do update
 set arvo = :arvo,
     osallistuminen = :osallistuminen,
-    tallettaja = :tallettaja
+    tallettaja = :tallettaja,
+    system_time = tstzrange(now(), null, '[)')
 where valintapiste.hakemus_oid = :hakemus-oid and valintapiste.tunniste = :tunniste
