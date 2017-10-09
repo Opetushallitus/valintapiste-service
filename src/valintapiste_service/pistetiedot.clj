@@ -28,6 +28,7 @@
                       :sukunimi sukunimi } entry))) hakemukset))
 
 (def europe-helsinki (org.joda.time.DateTimeZone/forID "Europe/Helsinki"))
+(defn parse-date-time [stamp] (new java.sql.Timestamp (.getMillis (.parseDateTime (org.joda.time.format.ISODateTimeFormat/dateTime) stamp))))
 
 (defn convert-timestamp [sqldate] (if sqldate (let [joda (new org.joda.time.DateTime sqldate)
                                                joda-with-zone (.withZone joda europe-helsinki)] joda-with-zone) nil))
@@ -56,8 +57,9 @@
         (fetch-hakemusten-pistetiedot datasource hakuOID hakemukset)))
 
 (defn check-update-conflict [tx hakemusOIDs unmodified-since] 
-  (if unmodified-since 
-    (map (fn [hakemus] (-> hakemus :hakemus_oid)) (modified-since-hakemukset tx {:hakemus-oids hakemusOIDs :unmodified-since unmodified-since}))
+  (if unmodified-since
+    (let [sqltimestamp (parse-date-time unmodified-since)]
+    (map (fn [hakemus] (-> hakemus :hakemus_oid)) (modified-since-hakemukset tx {:hakemus-oids hakemusOIDs :unmodified-since sqltimestamp})))
     []))
 
 (defn update-pistetiedot
