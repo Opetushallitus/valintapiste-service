@@ -9,7 +9,7 @@ select lower(system_time) from valintapiste where hakemus_oid in (:hakemus-oids)
 
 -- name: modified-since-hakemukset
 -- Returns last-modified timestamp for multiple hakemusoids
-select hakemus_oid from valintapiste where hakemus_oid in (:hakemus-oids) and lower(system_time) > :unmodified-since::timestamp
+select hakemus_oid from valintapiste where hakemus_oid in (:hakemus-oids) and not system_time @> :unmodified-since::timestamptz
 
 -- name: upsert-valintapiste!
 -- Upserts valintapiste for specific hakemus oid and tunnus

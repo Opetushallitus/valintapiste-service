@@ -41,6 +41,11 @@
                               :arvo "UPDATE_FAILED!"
                               :osallistuminen "OSALLISTUI"
                               :tallettaja "1.2.3.4"}]}
+                   {:hakemusOID "CONFLICT_TEST"
+                    :pisteet [{:tunniste "TRY_TO_UPDATE"
+                              :arvo "UPDATE_FAILED!"
+                              :osallistuminen "OSALLISTUI"
+                              :tallettaja "1.2.3.4"}]}
                    {:hakemusOID "testi-hakemus-1"
                     :pisteet [{:tunniste "piste-1"
                                :arvo "10"
@@ -115,7 +120,10 @@
         (is (= body [{:hakemusOID "1.2.3.4" :oppijaOID "" :pisteet []}]))))
 
     (testing "Test PUT /haku/.../hakukohde/... put pistetiedot for 'hakukohteen tunnisteet'"
-      (let [json-body (generate-string [{:hakemusOID "UPDATE_TEST"
+      (let [initial-get ((app mockedMongo datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+            headers (:headers initial-get)
+            timestamp (get headers "Last-Modified");(.toString (org.joda.time.DateTime/now (org.joda.time.DateTimeZone/forID "Europe/Helsinki") ))
+            json-body (generate-string [{:hakemusOID "UPDATE_TEST"
                                           :pisteet [{ :tunniste "TRY_TO_UPDATE"
                                                       :arvo "UPDATE_SUCCEEDED!"
                                                       :osallistuminen "OSALLISTUI"
@@ -134,12 +142,12 @@
             response ((app mockedMongo datasource "") 
                       (-> (mock/request :put "/api/haku/1.2.3.4/hakukohde/1.2.3.4" json-body)
                           (mock/query-string auditSession)
-                          (mock/header "If-Unmodified-Since" (.toString (org.joda.time.DateTime/now (org.joda.time.DateTimeZone/forID "Europe/Helsinki") ))) 
+                          (mock/header "If-Unmodified-Since" timestamp) 
                           (mock/content-type "application/json")))]
         (is (= (:status response) 200))))
 
     (testing "Test PUT /haku/.../hakukohde/... fails when too late"
-      (let [json-body (generate-string [{:hakemusOID "UPDATE_TEST"
+      (let [json-body (generate-string [{:hakemusOID "CONFLICT_TEST"
                                           :pisteet [{ :tunniste "TRY_TO_UPDATE"
                                                       :arvo "UPDATE_SUCCEEDED!"
                                                       :osallistuminen "OSALLISTUI"
@@ -151,5 +159,5 @@
                           (mock/content-type "application/json")))
             body     (parse-body (:body response))]
         (is (= (:status response) 409))
-        (is (= body ["UPDATE_TEST"] ))))))
+        (is (= body ["CONFLICT_TEST"] ))))))
 
