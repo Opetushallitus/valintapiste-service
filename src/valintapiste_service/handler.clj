@@ -71,37 +71,37 @@
                 hakemukset (-> data :hakemukset)]
             (add-last-modified (ok hakemukset) last-modified))))
 
-      (POST "/haku/:hakuOID/pisteet-with-hakemusoids" 
+      (POST "/pisteet-with-hakemusoids" 
         [hakuOID sessionId uid inetAddress userAgent]
         :body [hakemusoids [s/Str]]
         :return [PistetietoWrapper]
         :summary "Hakukohteen hakemusten pistetiedot"
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
-          (let [data (p/fetch-hakemusten-pistetiedot datasource hakuOID (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
+          (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
             (add-last-modified (ok hakemukset) last-modified))))
 
-      (GET "/haku/:hakuOID/hakemus/:hakemusOID/oppija/:oppijaOID" 
+      (GET "/hakemus/:hakemusOID/oppija/:oppijaOID" 
         [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
         :return PistetietoWrapper
         :summary "Hakemuksen pistetiedot"
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
-          (let [data (p/fetch-hakemusten-pistetiedot datasource hakuOID [{:oid hakemusOID :personOid oppijaOID}])
+          (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
             (add-last-modified (ok (first hakemukset)) last-modified))))
 
-      (PUT "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
+      (PUT "/pisteet-with-hakemusoids" 
         [ hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :body [uudet_pistetiedot [PistetietoWrapper]]
         :headers [headers {s/Any s/Any}]
         :summary "Syötä pistetiedot hakukohteen avaimilla"
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
-          (let [conflicting-hakemus-oids (p/update-pistetiedot datasource hakuOID hakukohdeOID uudet_pistetiedot (-> headers :if-unmodified-since))]
+          (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since))]
             (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids) )))))))
 
 (def config-property "valintapisteservice-properties")

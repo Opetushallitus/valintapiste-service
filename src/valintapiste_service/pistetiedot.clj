@@ -39,7 +39,7 @@
 
 (defn fetch-hakemusten-pistetiedot 
     "Returns pistetiedot for hakemus"
-    [datasource hakuOID hakemukset]
+    [datasource hakemukset]
     (let [connection {:datasource datasource}
           hakemusOIDs (map (-> :oid) hakemukset)
           hakemus-oid-to-hakemus (zipmap (map :oid hakemukset) hakemukset)
@@ -58,7 +58,7 @@
   "Returns pistetiedot for hakukohde"
   [hakuapp datasource hakuOID hakukohdeOID]
   (let [hakemukset (hakuapp hakuOID hakukohdeOID)]
-        (fetch-hakemusten-pistetiedot datasource hakuOID hakemukset)))
+        (fetch-hakemusten-pistetiedot datasource hakemukset)))
 
 (defn check-update-conflict [tx hakemusOIDs unmodified-since] 
   (if unmodified-since
@@ -70,7 +70,7 @@
 
 (defn update-pistetiedot
   "Updates pistetiedot"
-  [datasource hakuOID hakukohdeOID pistetietowrappers unmodified-since]
+  [datasource pistetietowrappers unmodified-since]
   (let [connection {:datasource datasource}
         hakemusOIDs (map (fn [hakemus] (-> hakemus :hakemusOID)) pistetietowrappers)
         data (jdbc/with-db-transaction [tx connection] 
