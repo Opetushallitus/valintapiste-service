@@ -30,7 +30,8 @@
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "valintapiste-service-0.1.0-SNAPSHOT-standalone.jar"
    :resource-paths ["resources"]
-   :jvm-opts ["-Dvalintapisteservice-properties=test.valintapisteservice.edn"
+   :jvm-opts ["-Dlog4j.configurationFile=log4j2.test.properties"
+              "-Dvalintapisteservice-properties=test.valintapisteservice.edn"
               "-XX:+TieredCompilation" "-XX:TieredStopAtLevel=1"]
    :main valintapiste-service.handler
    :aot [valintapiste-service.handler]
