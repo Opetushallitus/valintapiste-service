@@ -41,6 +41,11 @@
 (defn add-last-modified [response last-modified] 
   (if last-modified (header response "Last-Modified" last-modified) response))
 
+(defn log-exception-and-return-500 [e] 
+  (do 
+    (log/error "Internal server error!" e)
+    (internal-server-error (.getMessage e))))
+
 (defn app
   "This is the App"
   [hakuapp datasource basePath]
@@ -64,45 +69,53 @@
         [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :return [PistetietoWrapper]
         :summary "Hakukohteen hakemusten pistetiedot"
+        (try
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
           (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
-            (add-last-modified (ok hakemukset) last-modified))))
+            (add-last-modified (ok hakemukset) last-modified)))
+        (catch Exception e (log-exception-and-return-500 e))))
 
       (POST "/pisteet-with-hakemusoids" 
         [hakuOID sessionId uid inetAddress userAgent]
         :body [hakemusoids [s/Str]]
         :return [PistetietoWrapper]
         :summary "Hakukohteen hakemusten pistetiedot"
+        (try
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
           (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
-            (add-last-modified (ok hakemukset) last-modified))))
+            (add-last-modified (ok hakemukset) last-modified)))
+        (catch Exception e (log-exception-and-return-500 e))))
 
       (GET "/hakemus/:hakemusOID/oppija/:oppijaOID" 
         [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
         :return PistetietoWrapper
         :summary "Hakemuksen pistetiedot"
+        (try
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
           (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
                 last-modified (-> data :last-modified)
                 hakemukset (-> data :hakemukset)]
-            (add-last-modified (ok (first hakemukset)) last-modified))))
+            (add-last-modified (ok (first hakemukset)) last-modified)))
+        (catch Exception e (log-exception-and-return-500 e))))
 
       (PUT "/pisteet-with-hakemusoids" 
         [ hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :body [uudet_pistetiedot [PistetietoWrapper]]
         :headers [headers {s/Any s/Any}]
         :summary "Syötä pistetiedot hakukohteen avaimilla"
+        (try
         (do 
           (logAuditSession sessionId uid inetAddress userAgent)
           (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since))]
-            (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids) )))))))
+            (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids) )))
+        (catch Exception e (log-exception-and-return-500 e)))))))
 
 (def config-property "valintapisteservice-properties")
 
