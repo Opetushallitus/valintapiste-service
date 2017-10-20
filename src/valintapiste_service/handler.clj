@@ -18,7 +18,7 @@
 (s/defschema Pistetieto
   {;:aikaleima s/Str
    :tunniste s/Str
-   :arvo s/Str
+   (s/optional-key :arvo) s/Any
    :osallistuminen (s/enum "EI_OSALLISTUNUT" "OSALLISTUI" "EI_VAADITA" "MERKITSEMATTA")
    :tallettaja s/Str})
 
