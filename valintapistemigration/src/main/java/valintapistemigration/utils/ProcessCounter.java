@@ -23,8 +23,8 @@ public class ProcessCounter {
         epäonnistuneitaHakemuksenKäsittelyitä.addAndGet(määrä);
     }
 
-    public void hakemusLuettuMongosta() {
-        hakemuksiaLuettuMongosta.incrementAndGet();
+    public boolean hakemusLuettuMongosta() {
+        return hakemuksiaLuettuMongosta.incrementAndGet() >= hakemuksiaMongossa.get();
     }
 
     @Override

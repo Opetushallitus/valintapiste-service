@@ -78,26 +78,42 @@ public class Valintapistemigration {
         MongoCollection<Document> collection = database.getCollection("application");
 
         collection.count().subscribe(subscriber(count -> COUNTER.setHakemuksiaMongossa(count)));
+        Supplier<String> showStats =
+                () -> {
+                    return String.format("(queue size currently = %s) %s", queue.size(), COUNTER.toString());
+                };
+        Thread gracefulShutdown = new Thread(() -> {
+            LOG.info("All done! Beginning graceful shutdown!");
+            while (!queue.isEmpty()) {
+                storeDocumentToPostgresql.run();
+            }
+            LOG.warn("...Final stats: {}", showStats.get());
+
+            System.exit(0);
+
+        });
+
 
         Consumer<Document> handleDocument = (document) -> {
-            COUNTER.hakemusLuettuMongosta();
+            final boolean kaikkiOnLuettu = COUNTER.hakemusLuettuMongosta();
             List<ValintapisteDAO.PisteRow> pisteRows = documentToRows(document);
             boolean hakemuksellaTallennettaviaPisteita = !pisteRows.isEmpty();
-            if(hakemuksellaTallennettaviaPisteita) {
+            if (hakemuksellaTallennettaviaPisteita) {
                 LOG.debug("Adding to queue! (size = {})", queue.size());
                 queue.add(pisteRows);
                 executorService.submit(storeDocumentToPostgresql);
             } else { // skipping hakemus with no pisteet
                 COUNTER.hakemusKäsitelty(1L);
             }
+            if (kaikkiOnLuettu) {
+                gracefulShutdown.run();
+            }
         };
         collection.find().subscribe(subscriber(handleDocument));
 
-        waitFor(TimeUnit.DAYS.toSeconds(7), () -> {
-            return String.format("(queue size currently = %s) %s", queue.size(), COUNTER.toString());
-        });
-    }
 
+        waitFor(TimeUnit.DAYS.toSeconds(7), showStats);
+    }
 
 
     public static HikariDataSource datasource(String uri) { //, String username, String password) {
@@ -113,7 +129,7 @@ public class Valintapistemigration {
 
     public static void waitFor(long seconds, Supplier<String> info) {
         long s = seconds;
-        while(s > 0) {
+        while (s > 0) {
             LOG.warn("...{} {}", s, info.get());
             try {
                 Thread.sleep(1000L);
