@@ -10,6 +10,10 @@
             [schema.core :as s]
             [valintapiste-service.hakuapp :as mongo]
             [valintapiste-service.db :as db])
+  (:import [org.eclipse.jetty.server.handler
+            HandlerCollection
+            RequestLogHandler]
+           (org.eclipse.jetty.server Slf4jRequestLog))
   (:gen-class))
 
 (def jul-over-slf4j (do (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -17,32 +21,32 @@
 
 (s/defschema Pistetieto
   {;:aikaleima s/Str
-   :tunniste s/Str
+   :tunniste              s/Str
    (s/optional-key :arvo) s/Any
-   :osallistuminen (s/enum "EI_OSALLISTUNUT" "OSALLISTUI" "EI_VAADITA" "MERKITSEMATTA")
-   :tallettaja s/Str})
+   :osallistuminen        (s/enum "EI_OSALLISTUNUT" "OSALLISTUI" "EI_VAADITA" "MERKITSEMATTA")
+   :tallettaja            s/Str})
 
 (s/defschema PistetietoWrapper
-  {:hakemusOID s/Str
-   (s/optional-key :sukunimi) s/Str
-   (s/optional-key :etunimet) s/Str
+  {:hakemusOID                 s/Str
+   (s/optional-key :sukunimi)  s/Str
+   (s/optional-key :etunimet)  s/Str
    (s/optional-key :oppijaOID) s/Str
-   :pisteet [Pistetieto]})
+   :pisteet                    [Pistetieto]})
 
-(defn throwIfNullsInAuditSession [auditSession] 
-  (if (not-any? nil? auditSession) 
+(defn throwIfNullsInAuditSession [auditSession]
+  (if (not-any? nil? auditSession)
     :default
     (throw (Exception. "Mandatory query params missing! (sessionId uid inetAddress userAgent)"))))
 
-(defn logAuditSession [sessionId uid inetAddress userAgent] 
+(defn logAuditSession [sessionId uid inetAddress userAgent]
   (do (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
-    (log/info "AuditSession {} {} {} {}" sessionId uid inetAddress userAgent)))
+      (log/info "AuditSession {} {} {} {}" sessionId uid inetAddress userAgent)))
 
-(defn add-last-modified [response last-modified] 
+(defn add-last-modified [response last-modified]
   (if last-modified (header response "Last-Modified" last-modified) response))
 
-(defn log-exception-and-return-500 [e] 
-  (do 
+(defn log-exception-and-return-500 [e]
+  (do
     (log/error "Internal server error!" e)
     (internal-server-error (.getMessage e))))
 
@@ -51,9 +55,9 @@
   [hakuapp datasource basePath]
   (api
     {:swagger
-     {:ui "/"
+     {:ui   "/"
       :spec "/swagger.json"
-      :data {:info {:title "Valintapiste-service"
+      :data {:info {:title       "Valintapiste-service"
                     :description "Pistetiedot"}
              }}}
 
@@ -61,69 +65,79 @@
       :tags ["api"]
 
       (GET "/healthcheck"
-        []
+           []
         :summary "Healtcheck API"
         (ok "OK"))
 
-      (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID" 
-        [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
+      (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID"
+           [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :return [PistetietoWrapper]
         :summary "Hakukohteen hakemusten pistetiedot"
         (try
-        (do 
-          (logAuditSession sessionId uid inetAddress userAgent)
-          (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
-                last-modified (-> data :last-modified)
-                hakemukset (-> data :hakemukset)]
-            (add-last-modified (ok hakemukset) last-modified)))
-        (catch Exception e (log-exception-and-return-500 e))))
+          (do
+            (logAuditSession sessionId uid inetAddress userAgent)
+            (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
+                  last-modified (-> data :last-modified)
+                  hakemukset (-> data :hakemukset)]
+              (add-last-modified (ok hakemukset) last-modified)))
+          (catch Exception e (log-exception-and-return-500 e))))
 
-      (POST "/pisteet-with-hakemusoids" 
-        [hakuOID sessionId uid inetAddress userAgent]
+      (POST "/pisteet-with-hakemusoids"
+            [hakuOID sessionId uid inetAddress userAgent]
         :body [hakemusoids [s/Str]]
         :return [PistetietoWrapper]
         :summary "Hakukohteen hakemusten pistetiedot"
         (try
-        (do 
-          (logAuditSession sessionId uid inetAddress userAgent)
-          (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
-                last-modified (-> data :last-modified)
-                hakemukset (-> data :hakemukset)]
-            (add-last-modified (ok hakemukset) last-modified)))
-        (catch Exception e (log-exception-and-return-500 e))))
+          (do
+            (logAuditSession sessionId uid inetAddress userAgent)
+            (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
+                  last-modified (-> data :last-modified)
+                  hakemukset (-> data :hakemukset)]
+              (add-last-modified (ok hakemukset) last-modified)))
+          (catch Exception e (log-exception-and-return-500 e))))
 
-      (GET "/hakemus/:hakemusOID/oppija/:oppijaOID" 
-        [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
+      (GET "/hakemus/:hakemusOID/oppija/:oppijaOID"
+           [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
         :return PistetietoWrapper
         :summary "Hakemuksen pistetiedot"
         (try
-        (do 
-          (logAuditSession sessionId uid inetAddress userAgent)
-          (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
-                last-modified (-> data :last-modified)
-                hakemukset (-> data :hakemukset)]
-            (add-last-modified (ok (first hakemukset)) last-modified)))
-        (catch Exception e (log-exception-and-return-500 e))))
+          (do
+            (logAuditSession sessionId uid inetAddress userAgent)
+            (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
+                  last-modified (-> data :last-modified)
+                  hakemukset (-> data :hakemukset)]
+              (add-last-modified (ok (first hakemukset)) last-modified)))
+          (catch Exception e (log-exception-and-return-500 e))))
 
-      (PUT "/pisteet-with-hakemusoids" 
-        [ hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
+      (PUT "/pisteet-with-hakemusoids"
+           [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
         :body [uudet_pistetiedot [PistetietoWrapper]]
         :headers [headers {s/Any s/Any}]
         :summary "Syötä pistetiedot hakukohteen avaimilla"
         (try
-        (do 
-          (logAuditSession sessionId uid inetAddress userAgent)
-          (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since))]
-            (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids) )))
-        (catch Exception e (log-exception-and-return-500 e)))))))
+          (do
+            (logAuditSession sessionId uid inetAddress userAgent)
+            (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since))]
+              (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids))))
+          (catch Exception e (log-exception-and-return-500 e)))))))
 
 (def config-property "valintapisteservice-properties")
 
-(defn read-config-file-from-args [args] 
-    (first (filter some? 
-      (map (fn [arg] 
-        (if (str/starts-with? arg config-property) 
-          (subs arg (+ 1 (count config-property))) nil)) args))))
+(defn read-config-file-from-args [args]
+  (first (filter some?
+                 (map (fn [arg]
+                        (if (str/starts-with? arg config-property)
+                          (subs arg (+ 1 (count config-property))) nil)) args))))
+
+(defn- configure-request-log [server]
+  (doto server
+
+    (.setHandler (doto (HandlerCollection.)
+                   (.addHandler (.getHandler server))
+                   (.addHandler (doto (RequestLogHandler.)
+                                  (.setRequestLog (doto (Slf4jRequestLog.)
+                                                    (.setLoggerName "ACCESS")
+                                                    (.start)))))))))
 
 (defn -main [& args]
   (let [config-file (read-config-file-from-args args)
@@ -132,6 +146,9 @@
         mongoConnection (mongo/connection config)
         ]
     (db/migrate datasource)
-    (run-jetty (app (partial mongo/hakemusOidsForHakukohde (-> mongoConnection :db)) datasource "/valintapiste-service") {
-      :port (-> config :server :port)}) ))
+    (run-jetty (app (partial mongo/hakemusOidsForHakukohde
+                             (-> mongoConnection :db))
+                    datasource "/valintapiste-service")
+               {:port (-> config :server :port)
+                :configurator configure-request-log})))
 
