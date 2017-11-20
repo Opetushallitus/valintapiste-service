@@ -71,7 +71,7 @@
 
 (use-fixtures :once valintapiste-test-fixture)
 
-(def auditSession {:sessionId "sID" :uid "uID" :inetAddress "1.2.3.4" :userAgent "uAgent"})
+(def auditSession {:sessionId "sID" :uid "1.2.246.1.1.1" :inetAddress "127.0.0.1" :userAgent "uAgent"})
 
 (deftest valintapiste-tests
   (let [mockedMongo (fn [hakuOID hakukohdeOID] [{:oid "testi-hakemus-1" :personOid "1.2.3.4"} {:oid "1.2.3.4" :personOid "1.2.3.4"}])]

@@ -1,11 +1,12 @@
 (ns valintapiste-service.handler
   (:require [compojure.api.sweet :refer :all]
             [valintapiste-service.access :refer [access-logger]]
+            [valintapiste-service.audit :refer [audit]]
             [valintapiste-service.pistetiedot :as p]
             [valintapiste-service.config :as c]
             [ring.adapter.jetty :refer [run-jetty]]
             [ring.util.http-response :refer :all]
-            [clj-log4j2.core :as log]
+            [clojure.tools.logging :as log]
             [clojure.string :as str]
             [valintapiste-service.pool :as pool]
             [schema.core :as s]
@@ -14,7 +15,8 @@
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
             RequestLogHandler]
-           (org.eclipse.jetty.server Slf4jRequestLog))
+           (org.eclipse.jetty.server Slf4jRequestLog)
+           (fi.vm.sade.auditlog Audit ApplicationType))
   (:gen-class))
 
 (def jul-over-slf4j (do (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -39,9 +41,9 @@
     :default
     (throw (Exception. "Mandatory query params missing! (sessionId uid inetAddress userAgent)"))))
 
-(defn logAuditSession [sessionId uid inetAddress userAgent]
+(defn logAuditSession [operation sessionId uid inetAddress userAgent]
   (do (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
-      (log/info "AuditSession {} {} {} {}" sessionId uid inetAddress userAgent)))
+      (audit operation sessionId uid inetAddress userAgent)))
 
 (defn add-last-modified [response last-modified]
   (if last-modified (header response "Last-Modified" last-modified) response))
@@ -76,7 +78,7 @@
         :summary "Hakukohteen hakemusten pistetiedot"
         (try
           (do
-            (logAuditSession sessionId uid inetAddress userAgent)
+            (logAuditSession "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
             (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
                   last-modified (-> data :last-modified)
                   hakemukset (-> data :hakemukset)]
@@ -90,7 +92,7 @@
         :summary "Hakukohteen hakemusten pistetiedot"
         (try
           (do
-            (logAuditSession sessionId uid inetAddress userAgent)
+            (logAuditSession "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
             (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
                   last-modified (-> data :last-modified)
                   hakemukset (-> data :hakemukset)]
@@ -103,7 +105,7 @@
         :summary "Hakemuksen pistetiedot"
         (try
           (do
-            (logAuditSession sessionId uid inetAddress userAgent)
+            (logAuditSession "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent)
             (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
                   last-modified (-> data :last-modified)
                   hakemukset (-> data :hakemukset)]
@@ -117,7 +119,7 @@
         :summary "Syötä pistetiedot hakukohteen avaimilla"
         (try
           (do
-            (logAuditSession sessionId uid inetAddress userAgent)
+            (logAuditSession "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
             (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since))]
               (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids))))
           (catch Exception e (log-exception-and-return-500 e)))))))
