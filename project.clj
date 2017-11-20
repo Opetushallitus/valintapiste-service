@@ -8,6 +8,7 @@
    :dependencies [[org.clojure/clojure "1.8.0"]
                   [clj-http "3.7.0"]
                   [environ "1.1.0"]
+                  [cheshire "5.8.0"]
                   [metosin/compojure-api "1.1.11"]
                   [ring/ring-jetty-adapter "1.6.2"]
                   [com.novemberain/monger "3.1.0"]
@@ -45,7 +46,6 @@
                              :source-paths ["src" "test"]
                              :dependencies [[ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
               :dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]
-                                  [cheshire "5.8.0"]
                                   [org.clojure/java.jdbc "0.7.1"]
                                   [ru.yandex.qatools.embed/postgresql-embedded "2.4"]
                                   [ring/ring-mock "0.3.1"]]}})

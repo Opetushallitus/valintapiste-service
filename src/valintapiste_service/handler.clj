@@ -1,5 +1,6 @@
 (ns valintapiste-service.handler
   (:require [compojure.api.sweet :refer :all]
+            [valintapiste-service.access :refer [access-logger]]
             [valintapiste-service.pistetiedot :as p]
             [valintapiste-service.config :as c]
             [ring.adapter.jetty :refer [run-jetty]]
@@ -129,13 +130,13 @@
                         (if (str/starts-with? arg config-property)
                           (subs arg (+ 1 (count config-property))) nil)) args))))
 
-(defn- configure-request-log [server]
+(defn- configure-request-log [environment server]
   (doto server
 
     (.setHandler (doto (HandlerCollection.)
                    (.addHandler (.getHandler server))
                    (.addHandler (doto (RequestLogHandler.)
-                                  (.setRequestLog (doto (Slf4jRequestLog.)
+                                  (.setRequestLog (doto (access-logger environment) ;access-logger
                                                     (.setLoggerName "ACCESS")
                                                     (.start)))))))))
 
@@ -150,5 +151,5 @@
                              (-> mongoConnection :db))
                     datasource "/valintapiste-service")
                {:port (-> config :server :port)
-                :configurator configure-request-log})))
+                :configurator (partial configure-request-log (-> config :environment))})))
 
