@@ -7,7 +7,7 @@
 
 (def ^{:private true} slf4j-logger (impl/get-logger (impl/find-factory) "AUDIT"))
 
-(def ^{:private true} audit-logger (Audit.
+(defn create-audit-logger [] (Audit.
                                      (reify Logger (log [this message]
                                                      (.info slf4j-logger message)))
                                      "valintapiste-service"
@@ -16,7 +16,7 @@
 (defn create-user [sessionId uid inetAddress userAgent]
   (User. (Oid. uid) (InetAddress/getByName inetAddress) sessionId userAgent))
 
-(defn audit [operation sessionId uid inetAddress userAgent]
+(defn audit [audit-logger operation sessionId uid inetAddress userAgent]
   (let [user (create-user sessionId uid inetAddress userAgent)
         op (reify Operation (name [this] operation))
         target-builder (Target$Builder.)
