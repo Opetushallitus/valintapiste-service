@@ -31,4 +31,4 @@
                                    :session nil
                                    :response-size (.getWritten (.getOutputStream resp))
                                    :referer nil})]
-        (access-logger-impl (generate-string message))))))
+        (.info access-logger-impl (generate-string message))))))
