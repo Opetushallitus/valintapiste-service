@@ -57,7 +57,7 @@ appender.access.strategy.delete.ifLastModified.age = 30d
 
 # RollingFileAppender will print logs in file which can be rotated based on time or size
 appender.audit.type = RollingFile
-appender.audit.name = accessLogger
+appender.audit.name = auditLogger
 appender.audit.fileName=${basePath}/auditlog_valintapiste-service.log
 appender.audit.filePattern=${basePath}/auditlog_valintapiste-service_%d{yyyy-MM-dd}.log.gz
 appender.audit.layout.type = PatternLayout
