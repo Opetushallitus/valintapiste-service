@@ -1,9 +1,12 @@
 (ns valintapiste-service.access
-  (:require [cheshire.core :refer :all])
+  (:require [cheshire.core :refer :all]
+            [clojure.tools.logging.impl :as impl])
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
             RequestLogHandler]
            (org.eclipse.jetty.server Slf4jRequestLog)))
+
+(def ^{:private true} access-logger-impl (impl/get-logger (impl/find-factory) "ACCESS"))
 
 (defn- nil-to-slash [m]
     (into {} (for [[k v] m] [k (if (nil? v)
@@ -28,4 +31,4 @@
                                    :session nil
                                    :response-size (.getWritten (.getOutputStream resp))
                                    :referer nil})]
-        (proxy-super write (generate-string message))))))
+        (access-logger-impl (generate-string message))))))
