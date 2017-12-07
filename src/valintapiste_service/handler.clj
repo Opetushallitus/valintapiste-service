@@ -122,7 +122,7 @@
             (do
               (logAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
               (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since))]
-                (if (empty? conflicting-hakemus-oids) (ok) (conflict conflicting-hakemus-oids))))
+                (if (empty? conflicting-hakemus-oids) (ok) (conflict (set conflicting-hakemus-oids)))))
             (catch Exception e (log-exception-and-return-500 e))))))))
 
 (def config-property "valintapisteservice-properties")
