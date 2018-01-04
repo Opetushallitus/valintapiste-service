@@ -114,15 +114,19 @@
             (catch Exception e (log-exception-and-return-500 e))))
 
         (PUT "/pisteet-with-hakemusoids"
-             [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
+             [hakuOID hakukohdeOID sessionId uid inetAddress userAgent save-partially]
           :body [uudet_pistetiedot [PistetietoWrapper]]
           :headers [headers {s/Any s/Any}]
           :summary "Syötä pistetiedot hakukohteen avaimilla"
           (try
             (do
               (logAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
-              (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since))]
-                (if (empty? conflicting-hakemus-oids) (ok) (conflict (set conflicting-hakemus-oids)))))
+              (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since) save-partially)]
+                (if (empty? conflicting-hakemus-oids)
+                  (ok)
+                  (if save-partially
+                    (ok conflicting-hakemus-oids)
+                    (conflict conflicting-hakemus-oids)))))
             (catch Exception e (log-exception-and-return-500 e))))))))
 
 (def config-property "valintapisteservice-properties")
