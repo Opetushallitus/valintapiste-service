@@ -176,6 +176,22 @@
         (is (= (:status response) 200))
         (is (= body ["CONFLICT_TEST"] ))))
 
+    (testing "Test PUT /pisteet-with-hakemusoids... succeeds fully when allowing partial save"
+      (let [json-body (generate-string [{:hakemusOID "NOT_CONFLICT_TEST_2"
+                                         :pisteet [{ :tunniste "TRY_TO_UPDATE"
+                                                    :arvo "UPDATE_SUCCEEDED!"
+                                                    :osallistuminen "OSALLISTUI"
+                                                    :tallettaja "1.2.3.4"}]}])
+            response ((app mockedMongo datasource "")
+                       (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
+                           (mock/query-string (merge auditSession {:save-partially "true"}))
+                           (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00")
+                           (mock/content-type "application/json")))
+            body     (parse-body (:body response))]
+        (prn response)
+        (is (= (:status response) 200))
+        (is (= body []))))
+
     (testing "Test PUT /pisteet-with-hakemusoids... succeeds partially"
       (let [json-body (generate-string [{:hakemusOID "CONFLICT_TEST"
                                          :pisteet [{ :tunniste "TRY_TO_UPDATE"

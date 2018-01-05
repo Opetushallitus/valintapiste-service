@@ -123,7 +123,9 @@
               (logAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
               (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since) save-partially)]
                 (if (empty? conflicting-hakemus-oids)
-                  (ok)
+                  (if save-partially
+                    (ok conflicting-hakemus-oids)
+                    (ok))
                   (if save-partially
                     (ok conflicting-hakemus-oids)
                     (conflict conflicting-hakemus-oids)))))
