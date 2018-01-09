@@ -38,8 +38,12 @@
       date-time-inside-duration) nil))
 
 (defn fetch-hakemusten-pistetiedot
-  "Returns pistetiedot for hakemus"
+  "Returns pistetiedot for hakemus (max 32767)"
   [datasource hakemukset]
+  (if (> (count hakemukset) 32767) (throw (IllegalArgumentException. "Max number of hakemukset is 32767!")))
+  ;Postgres has hard coded limit 32767 for number of parameters in prepared statement in JDBC.
+  ;If more than 32767 hakemus oids is given to sql query below, PostgreSQL will fail with error code SQLSTATE(08006)
+  ;Caused by: java.io.IOException: Tried to send an out-of-range integer as a 2-byte value: 32768
   (let [connection {:datasource datasource}
         hakemusOIDs (map (-> :oid) hakemukset)
         hakemus-oid-to-hakemus (zipmap (map :oid hakemukset) hakemukset)

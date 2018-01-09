@@ -90,7 +90,7 @@
               [hakuOID sessionId uid inetAddress userAgent]
           :body [hakemusoids [s/Str]]
           :return [PistetietoWrapper]
-          :summary "Hakukohteen hakemusten pistetiedot"
+          :summary "Hakukohteen hakemusten pistetiedot. Hakemusten maksimimäärä on 32767 kpl."
           (try
             (do
               (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
