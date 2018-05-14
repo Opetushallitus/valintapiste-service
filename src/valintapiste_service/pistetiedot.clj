@@ -80,6 +80,11 @@
 (defn- pistetiedot-to-rows [pistetiedot]
   (mapcat pistetieto-to-rows pistetiedot))
 
+(defn- pistetieto-row-for-update [row]
+  (if-not (row :arvo)
+    (assoc row :arvo nil)
+    row))
+
 (defn update-pistetiedot
   "Updates pistetiedot"
   ([datasource pistetietowrappers unmodified-since]
@@ -92,8 +97,5 @@
                                              rows (filter (fn [r] (not (contains? conflicting-hakemus-oids (:hakemus-oid r)))) (pistetiedot-to-rows pistetietowrappers))]
                                          (if (or (empty? conflicting-hakemus-oids) save-partially?)
                                            (doseq [row rows]
-                                               (upsert-valintapiste! tx
-                                                  (if-not (row :arvo)
-                                                    (assoc row :arvo nil)
-                                                    row))))
+                                               (upsert-valintapiste! tx (pistetieto-row-for-update row))))
                                          conflicting-hakemus-oids))] data)))
