@@ -129,7 +129,9 @@
                   (if save-partially
                     (ok conflicting-hakemus-oids)
                     (conflict conflicting-hakemus-oids)))))
-            (catch Exception e (log-exception-and-return-500 e))))))))
+            (catch Exception e
+              (log/info "Pistetietojen tallennus epäonnistui: " uudet_pistetiedot)
+              (log-exception-and-return-500 e))))))))
 
 (def config-property "valintapisteservice-properties")
 
