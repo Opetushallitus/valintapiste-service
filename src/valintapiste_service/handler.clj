@@ -120,7 +120,6 @@
           :summary "Syötä pistetiedot hakukohteen avaimilla"
           (try
             (do
-              (log/info "Pistetietojen tallennus: " uudet_pistetiedot)
               (logAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
               (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since) save-partially)]
                 (if (empty? conflicting-hakemus-oids)
@@ -130,10 +129,7 @@
                   (if save-partially
                     (ok conflicting-hakemus-oids)
                     (conflict conflicting-hakemus-oids)))))
-            (catch Exception e
-              (do
-                (log/error "Pistetietojen tallennus epäonnistui: " uudet_pistetiedot)
-                (log-exception-and-return-500 e)))))))))
+            (catch Exception e (log-exception-and-return-500 e))))))))
 
 (def config-property "valintapisteservice-properties")
 
