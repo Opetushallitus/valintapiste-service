@@ -92,5 +92,8 @@
                                              rows (filter (fn [r] (not (contains? conflicting-hakemus-oids (:hakemus-oid r)))) (pistetiedot-to-rows pistetietowrappers))]
                                          (if (or (empty? conflicting-hakemus-oids) save-partially?)
                                            (doseq [row rows]
-                                             (upsert-valintapiste! tx row)))
+                                               (upsert-valintapiste! tx
+                                                  (if-not (row :arvo)
+                                                    (assoc row :arvo nil)
+                                                    row))))
                                          conflicting-hakemus-oids))] data)))
