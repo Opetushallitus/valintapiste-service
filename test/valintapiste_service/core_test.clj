@@ -192,6 +192,21 @@
         (is (= (:status response) 200))
         (is (= body []))))
 
+    (testing "Test PUT /pisteet-with-hakemusoids... missing arvo"
+      (let [json-body (generate-string [{:hakemusOID "MISSING_ARVO_TEST"
+                                         :pisteet [{ :tunniste "TRY_TO_UPDATE"
+                                                    :osallistuminen "OSALLISTUI"
+                                                    :tallettaja "1.2.3.4"}]}])
+            response ((app mockedMongo datasource "")
+                       (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
+                           (mock/query-string (merge auditSession {:save-partially "true"}))
+                           (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00")
+                           (mock/content-type "application/json")))
+            body     (parse-body (:body response))]
+        (prn response)
+        (is (= (:status response) 200))
+        (is (= body []))))
+
     (testing "Test PUT /pisteet-with-hakemusoids... succeeds partially"
       (let [json-body (generate-string [{:hakemusOID "CONFLICT_TEST"
                                          :pisteet [{ :tunniste "TRY_TO_UPDATE"
