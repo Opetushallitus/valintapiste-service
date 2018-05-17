@@ -45,7 +45,7 @@
   ;If more than 32767 hakemus oids is given to sql query below, PostgreSQL will fail with error code SQLSTATE(08006)
   ;Caused by: java.io.IOException: Tried to send an out-of-range integer as a 2-byte value: 32768
   (let [connection {:datasource datasource}
-        hakemusOIDs (map (-> :oid) hakemukset)
+        hakemusOIDs (map :oid hakemukset)
         hakemus-oid-to-hakemus (zipmap (map :oid hakemukset) hakemukset)
         data (jdbc/with-db-transaction [tx connection]
                                        {:last-modified (convert-timestamp (first (map (fn [i] (-> :lower i)) (last-modified-for-hakemukset tx {:hakemus-oids hakemusOIDs}))))
@@ -58,11 +58,16 @@
                                  (add-oppija-oid hakemus-oid-to-hakemus
                                                  (map (fn [hk] {:hakemusOID hk :pisteet []}) missing-hakemus-oids))))}))
 
+(defn- ataru-hakemus-as-oid-and-personOid [h]
+  {:oid (:hakemus_oid h)
+   :personOid (:henkilo_oid h)})
+
 (defn fetch-hakukohteen-pistetiedot
   "Returns pistetiedot for hakukohde"
-  [hakuapp datasource hakuOID hakukohdeOID]
-  (let [hakemukset (hakuapp hakuOID hakukohdeOID)]
-    (fetch-hakemusten-pistetiedot datasource hakemukset)))
+  [hakuapp ataruapp datasource hakuOID hakukohdeOID]
+  (let [hakemukset (hakuapp hakuOID hakukohdeOID)
+        hakemukset-from-ataru (map ataru-hakemus-as-oid-and-personOid (ataruapp hakuOID hakukohdeOID))]
+    (fetch-hakemusten-pistetiedot datasource (concat hakemukset hakemukset-from-ataru))))
 
 (defn check-update-conflict [tx hakemusOIDs unmodified-since]
   (if unmodified-since

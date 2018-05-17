@@ -11,6 +11,7 @@
             [valintapiste-service.pool :as pool]
             [schema.core :as s]
             [valintapiste-service.hakuapp :as mongo]
+            [valintapiste-service.ataru :as ataru]
             [valintapiste-service.db :as db])
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
@@ -55,7 +56,7 @@
 
 (defn app
   "This is the App"
-  [hakuapp datasource basePath]
+  [hakuapp ataruapp datasource basePath]
   (let [audit-logger (create-audit-logger)]
     (api
       {:swagger
@@ -80,7 +81,7 @@
           (try
             (do
               (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
-              (let [data (p/fetch-hakukohteen-pistetiedot hakuapp datasource hakuOID hakukohdeOID)
+              (let [data (p/fetch-hakukohteen-pistetiedot hakuapp ataruapp datasource hakuOID hakukohdeOID)
                     last-modified (-> data :last-modified)
                     hakemukset (-> data :hakemukset)]
                 (add-last-modified (ok hakemukset) last-modified)))
@@ -156,8 +157,12 @@
         mongoConnection (mongo/connection config)
         ]
     (db/migrate datasource)
-    (run-jetty (app (partial mongo/hakemusOidsForHakukohde
+    (run-jetty (app (partial mongo/hakemus-oids-for-hakukohde
                              (-> mongoConnection :db))
+                    (ataru/hakemus-oids-for-hakukohde
+                             (-> config :host-virkailija)
+                             (-> config :valintapiste-cas-username)
+                             (-> config :valintapiste-cas-password))
                     datasource "/valintapiste-service")
                {:port         (-> config :server :port)
                 :configurator (partial configure-request-log (-> config :environment))})))
