@@ -10,7 +10,7 @@
     [config]
     (mg/connect-via-uri (-> config :mongo :uri)))
 
-(defn hakemusOidsForHakukohde
+(defn hakemus-oids-for-hakukohde
     "Fetch all active 'hakemus OIDs' in 'hakukohde'"
     [db hakuOID hakukohdeOID]
     (let [coll "application"]

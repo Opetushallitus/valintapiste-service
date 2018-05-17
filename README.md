@@ -25,7 +25,7 @@ lein test             9.46s user 0.95s system 95% cpu 10.877 total
 `time lein trampoline test`
 lein trampoline test  6.32s user 0.59s system 99% cpu 6.909 total
 
-### Start test Postgres (to localhost:5432/test with username test and password test)
+### Start test Postgres (to localhost:55432/test with username test and password test)
 
 `lein testpostgres`
 
