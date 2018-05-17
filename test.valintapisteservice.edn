@@ -5,7 +5,7 @@
       :username "test"
       :password "test"
       :maximum-pool-size 4
-      :port 5432}
+      :port 55432}
  :mongo {:uri ""}
  :server {:port 8080}
           :base-url "/valintapiste-service"}
