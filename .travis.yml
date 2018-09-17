@@ -21,4 +21,11 @@ install:
 - git clone https://github.com/Opetushallitus/ci-tools.git
 - source ci-tools/common/setup-tools.sh
 
+script:
 - ./lein do clean, uberjar
+- mv target/valintapiste-service-*-standalone.jar $DOCKER_BUILD_DIR/artifact/valintapiste-service.jar
+- cp -vr oph-configuration $DOCKER_BUILD_DIR/config/
+
+- export BASE_IMAGE="base-legacy:0.1"
+- ./ci-tools/common/pull-image.sh
+- ./ci-tools/build/build-fatjar.sh valintapiste-service
