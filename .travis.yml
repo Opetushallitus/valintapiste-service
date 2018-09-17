@@ -5,6 +5,10 @@ jdk:
 
 services:
 - docker
+- postgresql
+
+addons:
+  postgresql: "9.5"
 
 cache:
   directories:
@@ -21,11 +25,23 @@ install:
 - git clone https://github.com/Opetushallitus/ci-tools.git
 - source ci-tools/common/setup-tools.sh
 
+before_script:
+- psql -c "create database valintapiste_test;" -U postgres
+- psql -d valintapiste_test -f init_travis_potsgres.sql
+- cp -v test.valintapisteservice.travis.edn test.valintapisteservice.edn
+
 script:
-- ./lein do clean, uberjar
+- lein test
+- lein do clean, uberjar
 - mv target/valintapiste-service-*-standalone.jar $DOCKER_BUILD_DIR/artifact/valintapiste-service.jar
 - cp -vr oph-configuration $DOCKER_BUILD_DIR/config/
 
 - export BASE_IMAGE="base-legacy:0.1"
 - ./ci-tools/common/pull-image.sh
 - ./ci-tools/build/build-fatjar.sh valintapiste-service
+
+deploy:
+  provider: script
+  script: ./ci-tools/build/upload-image.sh valintapiste-service
+  on:
+    all_branches: true
