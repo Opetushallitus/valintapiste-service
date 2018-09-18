@@ -1,0 +1,47 @@
+language: clojure
+
+jdk:
+- oraclejdk8
+
+services:
+- docker
+- postgresql
+
+addons:
+  postgresql: "9.5"
+
+cache:
+  directories:
+  - $HOME/.m2
+
+env:
+  global:
+  # AWS_ACCESS_KEY_ID
+  - secure: "v0Up9pz0gnyGmXyf56A4jrk14mQiJaxr4tG8ja7pFz+eRT4ekLyOvlYLye4xY9aSuCOAnvqdaY1W0/i9o7LnVi5ChTWfCdx3jysrFIBx9agyfKoqDiKSrplrV+JgRC2hQ7xVSlU72++Wy4JRSj8Dzdu3nBGWeC7V4px9U25DIfktis9AtLlsvWqV52KjSiISzxoLOuo/X8XkWKlWZEBy8ZVGe7hwm3Wa7rgNFVPf9J2MgFSpf/XJ1GLFpfI0xcmC0DYReF9/nSTGKFPICwBm9xWA+4OXhSx/Lbt0tEQzKqAKAhW+rqJhKLmfB5MzRr8tXeY3TMD4Ratiok1StUqj/OrOXSJjML7Uh2OoMbcAchBaboSemie7/obu0VxRGea3JL1Js4BueK5qiyL3E3CGaTWTVI+INCNRv6+q7pxeFTpnLq0cwYOTN0lHZlKJToFATF69yM3zOjEh8D4431l2kuCOAR4ho3piHFY2TqQoUMtul1KbVD28bw4DL/Cr7ba1ksnn5Zrn2Brt0C2RaaMfQQh1JqzDBNpU0jTsdnhFF67ZMARL4/y2Z8eVdS8taEaNDtLj5Bt0dlW72C5E4niNQ53121hfv4jGQan+3mNNpi2y87Ty6DxuncwSYCYWelI8Cce/jCKTw60oFSV/T4RwCWCdLX/1qONUjTQM+qEmoNE="
+  # AWS_SECRET_ACCESS_KEY
+  - secure: "YUR3G7IhFcFfEFG8mZc78FyGhCyixaCVSICPnyHtxTltNqO/CxQL+47Kh8rbq9+Kef19/N4/AaKrusCjhq5CfonPeIR3rIQeYZy4Jn8K8piv5c+WCOtMYezL4/EI577RWaRqCP41JsQs3BehAYB2EQllYaZCDVWHyhX4RhAQYK0oo6056c2Fe3F438R2h6w7Je8Ac5U964HLRQVnqhHlfho4v+EGFYxc3BsWvMby6NtN3GxbIB5tO5Tw6V4V/SacbLJ9iHiyLL+eXHsWk/lMKszNQtZ+uxyJtpeoFUaa6+E6FjLhi7mhWsnbF5JqRgr7+/r2p9GyrHg+aWzTqkWZUU0HKT4KhNx4A4IbVymYP+ELCjJOUR6ReGna1I0iyQzWZz4Fi2gIfi3fztP4XQiVWbhlnraHGtQnee+ZcJTV9jlZYc2+1cKyUSO96GOpEywfgbjytfnjW8l7iQfYXztFJeQqm85MPmVQKV5rOzbJWV0F7uKYDoL3uHfh8aOjC5sOQ0hTkxosOkUhLkGZdwWRu1qOC6+YcTnjZXFnC4+nmkDUX6MxewX3cdp1Bt4aMPDI1Bw01Y1YG0YiKJZZeHvrwgqk74yn5ZRUl+GV0GO+4vyS8ftmDrArDQw9ly66W8LaV3E8ys5hBPbAq5Zr7vEIZtD3bPxvePcXOac6qGTDpZQ="
+
+install:
+- git clone https://github.com/Opetushallitus/ci-tools.git
+- source ci-tools/common/setup-tools.sh
+
+before_script:
+- psql -c "create database valintapiste_test;" -U postgres
+- psql -d valintapiste_test -f init_travis_potsgres.sql
+- cp -v test.valintapisteservice.travis.edn test.valintapisteservice.edn
+
+script:
+- lein test
+- lein do clean, uberjar
+- mv target/valintapiste-service-*-standalone.jar $DOCKER_BUILD_DIR/artifact/valintapiste-service.jar
+- cp -vr oph-configuration $DOCKER_BUILD_DIR/config/
+
+- export BASE_IMAGE="base-legacy:0.1"
+- ./ci-tools/common/pull-image.sh
+- ./ci-tools/build/build-fatjar.sh valintapiste-service
+
+deploy:
+  provider: script
+  script: ./ci-tools/build/upload-image.sh valintapiste-service
+  on:
+    all_branches: true
