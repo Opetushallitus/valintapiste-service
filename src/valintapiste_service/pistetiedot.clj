@@ -59,8 +59,9 @@
                                                  (map (fn [hk] {:hakemusOID hk :pisteet []}) missing-hakemus-oids))))}))
 
 (defn ataru-hakemus-as-oid-and-personOid [h]
-  {:oid (get h "hakemus_oid")
-   :personOid (get h "henkilo_oid")})
+  (let [hakemus (clojure.walk/keywordize-keys h)]
+    {:oid       (:hakemus_oid hakemus)
+     :personOid (:henkilo_oid hakemus)}))
 
 (defn fetch-hakukohteen-pistetiedot
   "Returns pistetiedot for hakukohde"

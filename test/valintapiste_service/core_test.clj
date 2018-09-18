@@ -105,7 +105,7 @@
 
     (testing "Test GET /haku/.../hakukohde/... returns one pistetieto (from ataru)"
       (let [response ((app (fn [hakuOID hakukohdeOID] [])
-                           (fn [hakuOID hakukohdeOID] [{:hakemus_oid "1.2.3.4" :henkilo_oid "1.2.3.5"}])
+                           (fn [hakuOID hakukohdeOID] [{"hakemus_oid" "1.2.3.4" "henkilo_oid" "1.2.3.5"}])
                            datasource "") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
             headers (:headers response)
             body     (parse-body (:body response))]
@@ -209,7 +209,7 @@
                                          :pisteet [{ :tunniste "TRY_TO_UPDATE"
                                                     :osallistuminen "OSALLISTUI"
                                                     :tallettaja "1.2.3.4"}]}])
-            response ((app mockedMongo datasource "")
+            response ((app mockedMongo mockedAtaru datasource "")
                        (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
                            (mock/query-string (merge auditSession {:save-partially "true"}))
                            (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00")
