@@ -9,6 +9,7 @@
 (def ATARU-TILASTOKESKUS-READ-URL "%s/lomake-editori/api/external/tilastokeskus?hakuOid=%s&hakukohdeOid=%s")
 (def SYNC-FETCH-LOCK (Object.))
 (def SESSION-TTL-IN-MILLIS (.toMillis TimeUnit/MINUTES (long 30)))
+(def SESSION-FETCH-TIMEOUT (.toMillis TimeUnit/SECONDS (long 5)))
 
 (defn invalidate-cas-session [cached-session current-session]
   (if (compare-and-set! cached-session current-session nil)
@@ -25,8 +26,8 @@
 (defn force-fetch-new-session [host-virkailija username password]
   (log/info "Fetching new CAS session for Ataru!")
   (let [cs (clj-http.cookies/cookie-store)
-        service-ticket (-> (ticket-granting-ticket cs host-virkailija username password)
-                           (service-ticket cs (str host-virkailija "/lomake-editori/auth/cas")))
+        service-ticket (-> (ticket-granting-ticket cs host-virkailija username password SESSION-FETCH-TIMEOUT)
+                           (service-ticket cs (str host-virkailija "/lomake-editori/auth/cas") SESSION-FETCH-TIMEOUT))
         auth-url (format "%s/lomake-editori/auth/cas?ticket=%s" host-virkailija service-ticket)
         auth-response (client/get auth-url
                         {:cookie-store cs
