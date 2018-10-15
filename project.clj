@@ -44,7 +44,8 @@
              [com.jakemccrary/lein-test-refresh "0.21.1"]
              [lein-autoreload "0.1.1"]
              [lein-deploy-artifacts "0.1.0"]]
-   :profiles {:uberjar {:prep-tasks ["compile" "resource"]}
+   :profiles {:test {:jvm-opts ["-XX:MaxJavaStackTraceDepth=10"]}
+              :uberjar {:prep-tasks ["compile" "resource"]}
               :testpostgres {:main valintapiste-service.testpostgres
                              :source-paths ["src" "test"]
                              :dependencies [[ru.yandex.qatools.embed/postgresql-embedded "2.4"]]}
