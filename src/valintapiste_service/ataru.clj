@@ -31,6 +31,8 @@
         auth-url (format "%s/lomake-editori/auth/cas?ticket=%s" host-virkailija service-ticket)
         auth-response (client/get auth-url
                         {:cookie-store cs
+                         :socket-timeout SESSION-FETCH-TIMEOUT
+                         :conn-timeout SESSION-FETCH-TIMEOUT
                          :cookie-policy :standard})]
     (or (and (= (:status auth-response) 200)
              {:timestamp (Date.)
@@ -59,6 +61,8 @@
    (client/get url {:cookie-store          (:cookie-store some-session)
                     :follow-redirects      false
                     :throw-entire-message? true
+                    :socket-timeout SESSION-FETCH-TIMEOUT
+                    :conn-timeout SESSION-FETCH-TIMEOUT
                     :cookie-policy         :standard})
    :body
    (cheshire/parse-string)))
