@@ -2,8 +2,8 @@
  :db {:schema "public"
       :servername "{{host_postgresql_valintapisteservice}}"
       :databasename "{{host_postgresql_valintapisteservice_dbname}}"
-      :username "{{host_postgresql_valintapisteservice_user}}"
-      :password "{{host_postgresql_valintapisteservice_password}}"
+      :username "{{postgres_app_user}}"
+      :password "{{host_postgresql_valintapisteservice_app_password}}"
       :maximum-pool-size {{host_postgresql_valintapisteservice_max_active}}
       :port {{host_postgresql_valintapisteservice_port}}}
  :valintapiste-cas-username "{{valintalaskentakoostepalvelu_app_username_to_haku}}"
