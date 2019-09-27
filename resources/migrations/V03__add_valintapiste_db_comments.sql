@@ -1,5 +1,5 @@
 comment on database valintapisteservice is 'Tietokanta hakijan valintakoetiedoille';
-comment on table valintapiste is 'Hakijan valintakokeiden osallistumis- ja pistetiedot'
+comment on table valintapiste is 'Hakijan valintakokeiden osallistumis- ja pistetiedot';
 comment on column valintapiste.hakemus_oid is 'Hakemuksen OID';
 comment on column valintapiste.tunniste is 'Valintakokeen tunniste (syötettävä arvo)';
 comment on column valintapiste.arvo is 'Valintakokeen pisteet';
