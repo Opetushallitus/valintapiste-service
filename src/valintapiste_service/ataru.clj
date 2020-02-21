@@ -9,7 +9,7 @@
 (def ATARU-TILASTOKESKUS-READ-URL "%s/lomake-editori/api/external/tilastokeskus?hakuOid=%s&hakukohdeOid=%s")
 (def SYNC-FETCH-LOCK (Object.))
 (def SESSION-TTL-IN-MILLIS (.toMillis TimeUnit/MINUTES (long 30)))
-(def SESSION-FETCH-TIMEOUT (.toMillis TimeUnit/SECONDS (long 5)))
+(def SESSION-FETCH-TIMEOUT (.toMillis TimeUnit/SECONDS (long 50)))
 
 (defn invalidate-cas-session [cached-session current-session]
   (if (compare-and-set! cached-session current-session nil)
