@@ -10,6 +10,7 @@
 (def SYNC-FETCH-LOCK (Object.))
 (def SESSION-TTL-IN-MILLIS (.toMillis TimeUnit/MINUTES (long 30)))
 (def SESSION-FETCH-TIMEOUT (.toMillis TimeUnit/SECONDS (long 5)))
+(def SOCKET-TIMEOUT (.toMillis TimeUnit/SECONDS (long 30)))
 
 (defn invalidate-cas-session [cached-session current-session]
   (if (compare-and-set! cached-session current-session nil)
@@ -61,7 +62,7 @@
    (client/get url {:cookie-store          (:cookie-store some-session)
                     :follow-redirects      false
                     :throw-entire-message? true
-                    :socket-timeout SESSION-FETCH-TIMEOUT
+                    :socket-timeout SOCKET-TIMEOUT
                     :conn-timeout SESSION-FETCH-TIMEOUT
                     :cookie-policy         :standard})
    :body
