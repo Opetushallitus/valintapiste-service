@@ -25,7 +25,7 @@
                                    :environment environment
                                    :customer "OPH"
                                    :user-agent (.getHeader req "user-agent")
-                                   :caller-id nil
+                                   :caller-id (.getHeader req "caller-id")
                                    :x-forwarded-for (.getHeader req "x-forwarded-for")
                                    :remote-ip (.getRemoteAddr req)
                                    :session nil
