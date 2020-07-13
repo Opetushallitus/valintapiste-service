@@ -7,6 +7,7 @@
            (java.util.concurrent TimeUnit)))
 
 (def ATARU-TILASTOKESKUS-READ-URL "%s/lomake-editori/api/external/tilastokeskus?hakuOid=%s&hakukohdeOid=%s")
+(def CALLER-ID "1.2.246.562.10.00000000001.valintapiste-service")
 (def SYNC-FETCH-LOCK (Object.))
 (def SESSION-TTL-IN-MILLIS (.toMillis TimeUnit/MINUTES (long 30)))
 (def SESSION-FETCH-TIMEOUT (.toMillis TimeUnit/SECONDS (long 5)))
@@ -27,13 +28,14 @@
 (defn force-fetch-new-session [host-virkailija username password]
   (log/info "Fetching new CAS session for Ataru!")
   (let [cs (clj-http.cookies/cookie-store)
-        service-ticket (-> (ticket-granting-ticket cs host-virkailija username password SESSION-FETCH-TIMEOUT)
-                           (service-ticket cs (str host-virkailija "/lomake-editori/auth/cas") SESSION-FETCH-TIMEOUT))
+        service-ticket (-> (ticket-granting-ticket cs host-virkailija username password SESSION-FETCH-TIMEOUT CALLER-ID)
+                           (service-ticket cs (str host-virkailija "/lomake-editori/auth/cas") SESSION-FETCH-TIMEOUT CALLER-ID))
         auth-url (format "%s/lomake-editori/auth/cas?ticket=%s" host-virkailija service-ticket)
         auth-response (client/get auth-url
                         {:cookie-store cs
                          :socket-timeout SESSION-FETCH-TIMEOUT
                          :conn-timeout SESSION-FETCH-TIMEOUT
+                         :headers {"caller-id" CALLER-ID}
                          :cookie-policy :standard})]
     (or (and (= (:status auth-response) 200)
              {:timestamp (Date.)
@@ -59,12 +61,13 @@
 
 (defn fetch-from-ataru-with-session [some-session url]
   (->
-   (client/get url {:cookie-store          (:cookie-store some-session)
-                    :follow-redirects      false
-                    :throw-entire-message? true
-                    :socket-timeout SOCKET-TIMEOUT
-                    :conn-timeout SESSION-FETCH-TIMEOUT
-                    :cookie-policy         :standard})
+   (client/get url {:cookie-store           (:cookie-store some-session)
+                    :follow-redirects       false
+                    :throw-entire-message?  true
+                    :socket-timeout         SOCKET-TIMEOUT
+                    :conn-timeout           SESSION-FETCH-TIMEOUT
+                    :headers                {"caller-id" CALLER-ID}
+                    :cookie-policy          :standard})
    :body
    (cheshire/parse-string)))
 
