@@ -6,7 +6,7 @@
   (:import (java.util Date)
            (java.util.concurrent TimeUnit)))
 
-(def ATARU-TILASTOKESKUS-READ-URL "%s/lomake-editori/api/external/tilastokeskus?hakuOid=%s&hakukohdeOid=%s")
+(def ATARU-VALINTAPISTE-READ-URL "%s/lomake-editori/api/external/valintapiste?hakuOid=%s&hakukohdeOid=%s")
 (def CALLER-ID "1.2.246.562.10.00000000001.valintapiste-service")
 (def SYNC-FETCH-LOCK (Object.))
 (def SESSION-TTL-IN-MILLIS (.toMillis TimeUnit/MINUTES (long 30)))
@@ -74,7 +74,7 @@
 (defn hakemus-oids-for-hakukohde [host-virkailija username password]
   (let [cached-session (atom nil)]
     (fn [haku-oid hakukohde-oid]
-        (let [tilastokeskus-read-url (format ATARU-TILASTOKESKUS-READ-URL host-virkailija haku-oid hakukohde-oid)
+        (let [tilastokeskus-read-url (format ATARU-VALINTAPISTE-READ-URL host-virkailija haku-oid hakukohde-oid)
               some-session           (get-cas-session host-virkailija username password cached-session)
               hakemukset             (fetch-from-ataru-with-session some-session tilastokeskus-read-url)]
           (add-successful-usage cached-session some-session)
