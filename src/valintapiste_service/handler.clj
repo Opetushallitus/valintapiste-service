@@ -23,8 +23,7 @@
               [valintapiste-service.auth.cas-client :as cas]
               [ring.util.http-response :as response]
               [clj-ring-db-session.authentication.login :as crdsa-login]
-              [valintapiste-service.auth.urls :as urls]
-              [compojure.route :as route])
+              [valintapiste-service.auth.urls :as urls])
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
             RequestLogHandler]
@@ -105,7 +104,7 @@
 
 (defn api-routes [hakuapp ataruapp datasource basePath]
       (let [audit-logger (create-audit-logger)]
-           (context "" []
+           (context "/api" []
                     :tags ["api"]
 
                     (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID"
@@ -119,6 +118,7 @@
                              (let [data (p/fetch-hakukohteen-pistetiedot hakuapp ataruapp datasource hakuOID hakukohdeOID)
                                    last-modified (-> data :last-modified)
                                    hakemukset (-> data :hakemukset)]
+                                  (log/info "hee" hakemukset)
                                   (add-last-modified (ok hakemukset) last-modified)))
                            (catch Exception e (log-exception-and-return-500 e))))
 
@@ -172,7 +172,7 @@
 
 (defn new-app [hakuapp ataruapp datasource basePath config]
       "This is the new App with cas-auth"
-      (log/info (str "Running new app with basepath " basePath " and config " config))
+      (log/info (str "Running new app with basepath " basePath " and config " config " and env " env))
       (let [session-store (create-session-store datasource)
             login-cas-client (delay (cas/new-cas-client config))
             kayttooikeus-cas-client (delay (cas/new-client "/kayttooikeus-service" "j_spring_cas_security_check"
@@ -183,9 +183,9 @@
                :spec "/swagger.json"
                :data {:info {:title       "Valintapiste-service"
                              :description "Pistetiedot"}}}}
-             (context (str basePath "/api") []
+             (context basePath []
 
-                      (GET "/healthcheck"
+                      (GET "/api/healthcheck"
                            []
                            :summary "Healtcheck API"
                            (ok "OK"))
@@ -196,7 +196,7 @@
                                    #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                         (middleware [session-client/wrap-session-client-headers
                                      (session-timeout/wrap-idle-session-timeout config)]
-                                    (context "/" [] (api-routes hakuapp ataruapp datasource basePath)))
+                                    (api-routes hakuapp ataruapp datasource basePath))
                         (auth-routes login-cas-client session-store kayttooikeus-cas-client config))))))
 
 (defn app
