@@ -38,6 +38,7 @@
                    (vals oikeus-to-right)))
 
 (defn- login-succeeded [response virkailija]
+       (log/info "login succeeded " response ", virkailija " virkailija)
        (let [organization-oids (set (map (fn [{:keys [organisaatioOid]}]
                                              organisaatioOid) (:organisaatiot virkailija)))
              rights (set (map first (virkailija->right-organization-oids virkailija)))]
@@ -68,12 +69,13 @@
              config]
       (try
         (if-let [[username ticket] (login-provider)]
+                (do (log/info (str "Login with username " username ", ticket " ticket))
                 (let [virkailija (fetch-kayttaja-from-kayttoikeus-service config kayttooikeus-cas-client username)
                       response (crdsa-login/login
                                  {:username             username
                                   :ticket               ticket
                                   :success-redirect-url redirect-url})]
-                     (login-succeeded response virkailija))
+                     (login-succeeded response virkailija)))
                 (login-failed config))
         (catch Throwable e
                (login-failed config e))))
