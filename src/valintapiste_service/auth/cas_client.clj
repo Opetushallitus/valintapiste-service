@@ -28,9 +28,10 @@
            caller-id))
 
 (defn new-client [service security-uri-suffix session-cookie-name config]
-      {:pre [(some? (:cas config))]}
-      (let [username   (get-in config [:cas :username])
-            password   (get-in config [:cas :password])
+      {:pre [(some? (:valintapiste-cas-username config))
+             (some? (:valintapiste-cas-password config))]}
+      (let [username (:valintapiste-cas-username config)
+            password (:valintapiste-cas-password config)
             cas-params (CasParams/apply service security-uri-suffix username password)
             cas-client (new-cas-client config)]
            (map->CasClientState {:client              cas-client
