@@ -11,7 +11,8 @@
                                    :cookie-store cookie-store
                                    :socket-timeout timeout-ms
                                    :conn-timeout timeout-ms
-                                   :headers {"caller-id" caller-id}
+                                   :headers {"caller-id" caller-id
+                                             "CSRF" caller-id}
                                    :cookie-policy :standard})]
     (or (and (= (:status response) expected-status)
              (:body response))

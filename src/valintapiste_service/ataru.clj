@@ -35,7 +35,8 @@
                         {:cookie-store cs
                          :socket-timeout SESSION-FETCH-TIMEOUT
                          :conn-timeout SESSION-FETCH-TIMEOUT
-                         :headers {"caller-id" CALLER-ID}
+                         :headers {"caller-id" CALLER-ID
+                                   "CSRF" CALLER-ID}
                          :cookie-policy :standard})]
     (or (and (= (:status auth-response) 200)
              {:timestamp (Date.)
@@ -66,7 +67,8 @@
                     :throw-entire-message?  true
                     :socket-timeout         SOCKET-TIMEOUT
                     :conn-timeout           SESSION-FETCH-TIMEOUT
-                    :headers                {"caller-id" CALLER-ID}
+                    :headers                {"caller-id" CALLER-ID
+                                             "CSRF" CALLER-ID}
                     :cookie-policy          :standard})
    :body
    (cheshire/parse-string)))
