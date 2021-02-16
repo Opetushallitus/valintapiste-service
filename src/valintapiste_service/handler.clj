@@ -109,7 +109,7 @@
 
                     (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID" {session :session}
                          :return [PistetietoWrapper]
-                         :header-params [{sessionId :- s/Str nil}
+                         :query-params [{sessionId :- s/Str nil}
                                          {uid :- s/Str nil}
                                          {inetAddress :- s/Str nil}
                                          {userAgent :- s/Str nil}]
@@ -128,7 +128,7 @@
 
                     (POST "/pisteet-with-hakemusoids" {session :session}
                           :body [hakemusoids [s/Str]]
-                          :header-params [{sessionId :- s/Str nil}
+                          :query-params [{sessionId :- s/Str nil}
                                           {uid :- s/Str nil}
                                           {inetAddress :- s/Str nil}
                                           {userAgent :- s/Str nil}]
@@ -145,7 +145,7 @@
                             (catch Exception e (log-exception-and-return-500 e))))
 
                     (GET "/hakemus/:hakemusOID/oppija/:oppijaOID" {session :session}
-                         :header-params [{sessionId :- s/Str nil}
+                         :query-params [{sessionId :- s/Str nil}
                                          {uid :- s/Str nil}
                                          {inetAddress :- s/Str nil}
                                          {userAgent :- s/Str nil}]
@@ -165,7 +165,7 @@
 
                     (PUT "/pisteet-with-hakemusoids" {session :session}
                          :body [uudet_pistetiedot [PistetietoWrapper]]
-                         :header-params [{sessionId :- s/Str nil}
+                         :query-params [{sessionId :- s/Str nil}
                                          {uid :- s/Str nil}
                                          {inetAddress :- s/Str nil}
                                          {userAgent :- s/Str nil}
