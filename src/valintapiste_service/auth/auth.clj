@@ -26,7 +26,7 @@
 
 (def ^:private
      oikeus-to-right
-     {{:palvelu "VALINTAPISTE-SERVICE" :oikeus "CRUD"}         :valintapiste-service-crud})
+     {{:palvelu "VALINTOJENTOTEUTTAMINEN" :oikeus "CRUD"}         :valintapiste-service-crud})
 
 (defn virkailija->right-organization-oids
       [virkailija]
