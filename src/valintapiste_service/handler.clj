@@ -107,9 +107,14 @@
            (context "/api" []
                     :tags ["api"]
 
-                    (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID"
-                         [hakuOID hakukohdeOID sessionId uid inetAddress userAgent session]
+                    (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID" {session :session}
                          :return [PistetietoWrapper]
+                         :header-params [{sessionId :- s/Str nil}
+                                         {uid :- s/Str nil}
+                                         {inetAddress :- s/Str nil}
+                                         {userAgent :- s/Str nil}]
+                         :path-params [hakuOID :- (describe s/Str "hakuOid")
+                                       hakukohdeOID :- (describe s/Str "hakukohdeOid")]
                          :summary "Hakukohteen hakemusten pistetiedot"
                          (check-authorization! session)
                          (try
@@ -118,13 +123,15 @@
                              (let [data (p/fetch-hakukohteen-pistetiedot hakuapp ataruapp datasource hakuOID hakukohdeOID)
                                    last-modified (-> data :last-modified)
                                    hakemukset (-> data :hakemukset)]
-                                  (log/info "hee" hakemukset)
                                   (add-last-modified (ok hakemukset) last-modified)))
                            (catch Exception e (log-exception-and-return-500 e))))
 
-                    (POST "/pisteet-with-hakemusoids"
-                          [hakuOID sessionId uid inetAddress userAgent session]
+                    (POST "/pisteet-with-hakemusoids" {session :session}
                           :body [hakemusoids [s/Str]]
+                          :header-params [{sessionId :- s/Str nil}
+                                          {uid :- s/Str nil}
+                                          {inetAddress :- s/Str nil}
+                                          {userAgent :- s/Str nil}]
                           :return [PistetietoWrapper]
                           :summary "Hakukohteen hakemusten pistetiedot. Hakemusten maksimimäärä on 32767 kpl."
                           (check-authorization! session)
@@ -137,8 +144,13 @@
                                    (add-last-modified (ok hakemukset) last-modified)))
                             (catch Exception e (log-exception-and-return-500 e))))
 
-                    (GET "/hakemus/:hakemusOID/oppija/:oppijaOID"
-                         [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent session]
+                    (GET "/hakemus/:hakemusOID/oppija/:oppijaOID" {session :session}
+                         :header-params [{sessionId :- s/Str nil}
+                                         {uid :- s/Str nil}
+                                         {inetAddress :- s/Str nil}
+                                         {userAgent :- s/Str nil}]
+                         :path-params [oppijaOID :- (describe s/Str "oppijaOid")
+                                       hakemusOID :- (describe s/Str "hakemusOid")]
                          :return PistetietoWrapper
                          :summary "Hakemuksen pistetiedot"
                          (check-authorization! session)
@@ -151,9 +163,13 @@
                                   (add-last-modified (ok (first hakemukset)) last-modified)))
                            (catch Exception e (log-exception-and-return-500 e))))
 
-                    (PUT "/pisteet-with-hakemusoids"
-                         [hakuOID hakukohdeOID sessionId uid inetAddress userAgent save-partially session]
+                    (PUT "/pisteet-with-hakemusoids" {session :session}
                          :body [uudet_pistetiedot [PistetietoWrapper]]
+                         :header-params [{sessionId :- s/Str nil}
+                                         {uid :- s/Str nil}
+                                         {inetAddress :- s/Str nil}
+                                         {userAgent :- s/Str nil}
+                                         {save-partially :- s/Str nil}]
                          :headers [headers {s/Any s/Any}]
                          :summary "Syötä pistetiedot hakukohteen avaimilla"
                          (check-authorization! session)
