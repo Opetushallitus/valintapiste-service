@@ -69,7 +69,7 @@
 (defn check-authorization! [session dev?]
       (log/info (str "checking auth" session))
       (when-not (or dev?
-                    (some #(= "APP_VALINTOJENTOTEUTTAMINEN_CRUD" %) (-> session :identity :rights)))
+                    (some #(= "VALINTOJENTOTEUTTAMINEN-CRUD" %) (-> session :identity :rights)))
                 (log/warn "Missing user rights: " (-> session :identity :rights))
                 ;(response/unauthorized!) temporarily disabled
                 ))
