@@ -54,8 +54,9 @@
     (throw (Exception. "Mandatory query params missing! (sessionId uid inetAddress userAgent)"))))
 
 (defn logAuditSession [audit-logger operation sessionId uid inetAddress userAgent]
-  (do (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
-      (audit audit-logger operation sessionId uid inetAddress userAgent)))
+      (do (log/info (str "Logging audit session " operation  sessionId  uid  inetAddress  userAgent))
+          (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
+          (audit audit-logger operation sessionId uid inetAddress userAgent)))
 
 (defn add-last-modified [response last-modified]
   (if last-modified (header response "Last-Modified" last-modified) response))
@@ -65,22 +66,19 @@
     (log/error "Internal server error!" e)
     (internal-server-error (.getMessage e))))
 
-(defn- dev? []
-       (= (:dev? env) "true"))
-
-(defn check-authorization! [session]
+(defn check-authorization! [session dev?]
       (log/info (str "checking auth" session))
-      (when-not (or (dev?)
+      (when-not (or dev?
                     (some #(= "APP_VALINTOJENTOTEUTTAMINEN_CRUD" %) (-> session :identity :rights)))
-                (log/error "Missing user rights: " (-> session :identity :rights))
+                (log/warn "Missing user rights: " (-> session :identity :rights))
                 ;(response/unauthorized!) temporarily disabled
                 ))
 
-(defn- create-wrap-database-backed-session [session-store]
+(defn- create-wrap-database-backed-session [session-store dev]
        (fn [handler]
            (ring-session/wrap-session handler
                                       {:root         "/valintapiste-service"
-                                       :cookie-attrs {:secure (not (dev?))}
+                                       :cookie-attrs {:secure (not dev)}
                                        :store        session-store})))
 
 (defn auth-routes [login-cas-client session-store kayttooikeus-cas-client config]
@@ -102,7 +100,7 @@
                              (GET "/logout" {session :session}
                                   (crdsa-login/logout session (urls/cas-logout-url config)))))))
 
-(defn api-routes [hakuapp ataruapp datasource basePath]
+(defn api-routes [hakuapp ataruapp datasource dev?]
       (let [audit-logger (create-audit-logger)]
            (context "/api" []
                     :tags ["api"]
@@ -116,7 +114,7 @@
                          :path-params [hakuOID :- (describe s/Str "hakuOid")
                                        hakukohdeOID :- (describe s/Str "hakukohdeOid")]
                          :summary "Hakukohteen hakemusten pistetiedot"
-                         (check-authorization! session)
+                         (check-authorization! session dev?)
                          (try
                            (do
                              (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
@@ -134,7 +132,7 @@
                                           {userAgent :- s/Str nil}]
                           :return [PistetietoWrapper]
                           :summary "Hakukohteen hakemusten pistetiedot. Hakemusten maksimimäärä on 32767 kpl."
-                          (check-authorization! session)
+                          (check-authorization! session dev?)
                           (try
                             (do
                               (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
@@ -153,7 +151,7 @@
                                        hakemusOID :- (describe s/Str "hakemusOid")]
                          :return PistetietoWrapper
                          :summary "Hakemuksen pistetiedot"
-                         (check-authorization! session)
+                         (check-authorization! session dev?)
                          (try
                            (do
                              (logAuditSession audit-logger "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent)
@@ -172,7 +170,7 @@
                                          {save-partially :- s/Str nil}]
                          :headers [headers {s/Any s/Any}]
                          :summary "Syötä pistetiedot hakukohteen avaimilla"
-                         (check-authorization! session)
+                         (check-authorization! session dev?)
                          (try
                            (do
                              (logAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
@@ -188,11 +186,12 @@
 
 (defn new-app [hakuapp ataruapp datasource basePath config]
       "This is the new App with cas-auth"
-      (log/info (str "Running new app with basepath " basePath " and config " config " and env " env))
-      (let [session-store (create-session-store datasource)
+      (let [dev? (boolean (:dev? config))
+            session-store (create-session-store datasource)
             login-cas-client (delay (cas/new-cas-client config))
             kayttooikeus-cas-client (delay (cas/new-client "/kayttooikeus-service" "j_spring_cas_security_check"
                                                            "JSESSIONID" config))]
+           (log/info (str "Starting new app with dev mode " dev?))
            (api
              {:swagger
               {:ui   "/"
@@ -207,12 +206,12 @@
                            (ok "OK"))
 
                       (middleware
-                        [(create-wrap-database-backed-session session-store)
-                         (when-not (dev?)
+                        [(create-wrap-database-backed-session session-store dev?)
+                         (when-not dev?
                                    #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                         (middleware [session-client/wrap-session-client-headers
                                      (session-timeout/wrap-idle-session-timeout config)]
-                                    (api-routes hakuapp ataruapp datasource basePath))
+                                    (api-routes hakuapp ataruapp datasource dev?))
                         (auth-routes login-cas-client session-store kayttooikeus-cas-client config))))))
 
 (defn app
