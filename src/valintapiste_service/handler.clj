@@ -70,9 +70,8 @@
       (log/info (str "checking auth" session))
       (when-not (or dev?
                     (some #(= "VALINTOJENTOTEUTTAMINEN-CRUD" %) (-> session :identity :rights)))
-                (log/warn "Missing user rights: " (-> session :identity :rights))
-                ;(response/unauthorized!) temporarily disabled
-                ))
+                (do (log/warn "Missing user rights: " (-> session :identity :rights))
+                    (response/unauthorized!))))
 
 (defn- create-wrap-database-backed-session [session-store dev]
        (fn [handler]
