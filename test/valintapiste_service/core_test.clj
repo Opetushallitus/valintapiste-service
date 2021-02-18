@@ -151,7 +151,7 @@
                                                     :arvo "B"
                                                     :osallistuminen "OSALLISTUI"
                                                     :tallettaja "1.2.3.4"}]}])
-            response ((app mockedMongo mockedAtaru datasource "")
+            response ((new-app mockedMongo mockedAtaru datasource "" config)
                       (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
                           (mock/query-string auditSession)
                           (mock/header "If-Unmodified-Since" timestamp) 
