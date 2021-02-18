@@ -53,10 +53,30 @@
     :default
     (throw (Exception. "Mandatory query params missing! (sessionId uid inetAddress userAgent)"))))
 
-(defn logAuditSession [audit-logger operation sessionId uid inetAddress userAgent]
-      (do (log/info (str "Logging audit session " operation  sessionId  uid  inetAddress  userAgent))
+(defn logProxyAuditSession [audit-logger operation sessionId uid inetAddress userAgent]
+      (do (log/info (str "Logging proxy audit session " operation  sessionId  uid  inetAddress  userAgent))
           (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
           (audit audit-logger operation sessionId uid inetAddress userAgent)))
+
+(defn logDirectAuditSession [audit-logger operation session]
+      (let [sessionId (:key session)
+            uid (get-in session [:identity :oid])
+            inetAddress (:client-ip session)
+            userAgent (:user-agent session)]
+           (do (log/info (str "Logging direct audit session " operation  sessionId  uid  inetAddress  userAgent))
+               (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
+               (audit audit-logger operation sessionId uid inetAddress userAgent))
+           )
+     )
+
+(defn logAuditSession
+      [audit-logger operation sessionId uid inetAddress userAgent session config]
+      (log/info (str "Proxy users " (:proxy-users config) ", username from session " (get-in session [:identity :username])))
+      (if (or (:dev? config)
+              (contains? (:proxy-users config) (get-in session [:identity :username])))
+          (logProxyAuditSession audit-logger operation sessionId uid inetAddress userAgent)
+          (logDirectAuditSession audit-logger operation session)))
+
 
 (defn add-last-modified [response last-modified]
   (if last-modified (header response "Last-Modified" last-modified) response))
@@ -99,8 +119,9 @@
                              (GET "/logout" {session :session}
                                   (crdsa-login/logout session (urls/cas-logout-url config)))))))
 
-(defn api-routes [hakuapp ataruapp datasource dev?]
-      (let [audit-logger (create-audit-logger)]
+(defn api-routes [hakuapp ataruapp datasource config]
+      (let [audit-logger (create-audit-logger)
+            dev? (:dev? config)]
            (context "/api" []
                     :tags ["api"]
 
@@ -114,9 +135,10 @@
                                        hakukohdeOID :- (describe s/Str "hakukohdeOid")]
                          :summary "Hakukohteen hakemusten pistetiedot"
                          (check-authorization! session dev?)
+                         (log/info (str "*** " (:proxy-users config) (vector? (:proxy-users config)) ))
                          (try
                            (do
-                             (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
+                             (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent session config)
                              (let [data (p/fetch-hakukohteen-pistetiedot hakuapp ataruapp datasource hakuOID hakukohdeOID)
                                    last-modified (-> data :last-modified)
                                    hakemukset (-> data :hakemukset)]
@@ -134,7 +156,7 @@
                           (check-authorization! session dev?)
                           (try
                             (do
-                              (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
+                              (logProxyAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
                               (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
                                     last-modified (-> data :last-modified)
                                     hakemukset (-> data :hakemukset)]
@@ -153,7 +175,7 @@
                          (check-authorization! session dev?)
                          (try
                            (do
-                             (logAuditSession audit-logger "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent)
+                             (logProxyAuditSession audit-logger "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent)
                              (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
                                    last-modified (-> data :last-modified)
                                    hakemukset (-> data :hakemukset)]
@@ -172,7 +194,7 @@
                          (check-authorization! session dev?)
                          (try
                            (do
-                             (logAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
+                             (logProxyAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
                              (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since) save-partially)]
                                   (if (empty? conflicting-hakemus-oids)
                                       (if save-partially
@@ -210,7 +232,7 @@
                                    #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                         (middleware [session-client/wrap-session-client-headers
                                      (session-timeout/wrap-idle-session-timeout config)]
-                                    (api-routes hakuapp ataruapp datasource dev?))
+                                    (api-routes hakuapp ataruapp datasource config))
                         (auth-routes login-cas-client session-store kayttooikeus-cas-client config))))))
 
 (defn app
@@ -239,7 +261,7 @@
           :summary "Hakukohteen hakemusten pistetiedot"
           (try
             (do
-              (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
+              (logProxyAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
               (let [data (p/fetch-hakukohteen-pistetiedot hakuapp ataruapp datasource hakuOID hakukohdeOID)
                     last-modified (-> data :last-modified)
                     hakemukset (-> data :hakemukset)]
@@ -253,7 +275,7 @@
           :summary "Hakukohteen hakemusten pistetiedot. Hakemusten maksimimäärä on 32767 kpl."
           (try
             (do
-              (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
+              (logProxyAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
               (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
                     last-modified (-> data :last-modified)
                     hakemukset (-> data :hakemukset)]
@@ -266,7 +288,7 @@
           :summary "Hakemuksen pistetiedot"
           (try
             (do
-              (logAuditSession audit-logger "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent)
+              (logProxyAuditSession audit-logger "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent)
               (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
                     last-modified (-> data :last-modified)
                     hakemukset (-> data :hakemukset)]
@@ -280,7 +302,7 @@
           :summary "Syötä pistetiedot hakukohteen avaimilla"
           (try
             (do
-              (logAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
+              (logProxyAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
               (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since) save-partially)]
                 (if (empty? conflicting-hakemus-oids)
                   (if save-partially
