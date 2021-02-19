@@ -9,5 +9,5 @@
  :mongo {:uri ""}
  :server {:port 8080}
           :base-url "/valintapiste-service"
- :proxy-users []
+ :proxy-users "valintalaskentakoostepalvelu"
  :dev? true}

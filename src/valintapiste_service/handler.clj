@@ -23,7 +23,8 @@
               [valintapiste-service.auth.cas-client :as cas]
               [ring.util.http-response :as response]
               [clj-ring-db-session.authentication.login :as crdsa-login]
-              [valintapiste-service.auth.urls :as urls])
+              [valintapiste-service.auth.urls :as urls]
+              [clojure.string :refer [split]])
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
             RequestLogHandler]
@@ -71,9 +72,9 @@
 
 (defn logAuditSession
       [audit-logger operation sessionId uid inetAddress userAgent session config]
-      (log/info (str "Proxy users " (:proxy-users config) ", username from session " (get-in session [:identity :username])))
+      (log/info (str "Proxy users " (split (:proxy-users config) #",") ", username from session " (get-in session [:identity :username])))
       (if (or (:dev? config)
-              (contains? (:proxy-users config) (get-in session [:identity :username])))
+              (some #{(get-in session [:identity :username])} (split (:proxy-users config) #",")))
           (logProxyAuditSession audit-logger operation sessionId uid inetAddress userAgent)
           (logDirectAuditSession audit-logger operation session)))
 
