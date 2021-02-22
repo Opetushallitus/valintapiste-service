@@ -216,10 +216,11 @@
            (log/info (str "Starting new app with dev mode " dev?))
            (api
              {:swagger
-              {:ui   "/"
-               :spec "/swagger.json"
+              {:ui   (str basePath "/api-docs")
+               :spec (str basePath "/swagger.json")
                :data {:info {:title       "Valintapiste-service"
-                             :description "Pistetiedot"}}}}
+                             :description "Pistetiedot"}
+                      :tags [{:name "Valintapiste-service" :description "Pistetiedot API"}]}}}
              (context basePath []
 
                       (GET "/api/healthcheck"
