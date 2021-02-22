@@ -157,7 +157,7 @@
                           (check-authorization! session dev?)
                           (try
                             (do
-                              (logProxyAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
+                              (logAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent session config)
                               (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
                                     last-modified (-> data :last-modified)
                                     hakemukset (-> data :hakemukset)]
@@ -176,7 +176,7 @@
                          (check-authorization! session dev?)
                          (try
                            (do
-                             (logProxyAuditSession audit-logger "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent)
+                             (logAuditSession audit-logger "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent session config)
                              (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
                                    last-modified (-> data :last-modified)
                                    hakemukset (-> data :hakemukset)]
@@ -195,7 +195,7 @@
                          (check-authorization! session dev?)
                          (try
                            (do
-                             (logProxyAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
+                             (logAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent session config)
                              (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since) save-partially)]
                                   (if (empty? conflicting-hakemus-oids)
                                       (if save-partially
