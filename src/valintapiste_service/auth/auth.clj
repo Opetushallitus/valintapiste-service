@@ -12,7 +12,7 @@
 (defn cas-login [config cas-client ticket]
       (fn []
           (when ticket
-                [(.run (.validateServiceTicket cas-client (urls/valintapiste-service-login-url config) ticket))
+                [(.run (.validateServiceTicketWithVirkailijaUsername cas-client (urls/valintapiste-service-login-url config) ticket))
                  ticket])))
 
 (defn- login-failed
