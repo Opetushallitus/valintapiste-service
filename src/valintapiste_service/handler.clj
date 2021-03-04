@@ -120,9 +120,8 @@
                              (GET "/logout" {session :session}
                                   (crdsa-login/logout session (urls/cas-logout-url config)))))))
 
-(defn api-routes [hakuapp ataruapp datasource config]
-      (let [audit-logger (create-audit-logger)
-            dev? (:dev? config)]
+(defn api-routes [hakuapp ataruapp datasource config audit-logger]
+      (let [dev? (:dev? config)]
            (context "/api" []
                     :tags ["api"]
 
@@ -212,7 +211,8 @@
             session-store (create-session-store datasource)
             login-cas-client (delay (cas/new-cas-client config))
             kayttooikeus-cas-client (delay (cas/new-client "/kayttooikeus-service" "j_spring_cas_security_check"
-                                                           "JSESSIONID" config))]
+                                                           "JSESSIONID" config))
+            audit-logger (create-audit-logger)]
            (log/info (str "Starting new app with dev mode " dev?))
            (api
              {:swagger
@@ -234,7 +234,7 @@
                                    #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                         (middleware [session-client/wrap-session-client-headers
                                      (session-timeout/wrap-idle-session-timeout config)]
-                                    (api-routes hakuapp ataruapp datasource config))
+                                    (api-routes hakuapp ataruapp datasource config audit-logger))
                         (auth-routes login-cas-client session-store kayttooikeus-cas-client config))))))
 
 (defn app
