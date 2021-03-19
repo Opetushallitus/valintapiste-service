@@ -1,5 +1,6 @@
 (ns valintapiste-service.ataru
   (:require [clj-http.client :as client]
+            [clj-http.cookies :as cookies]
             [cheshire.core :as cheshire]
             [valintapiste-service.cas :refer [ticket-granting-ticket service-ticket]]
             [clojure.tools.logging :as log])
@@ -27,9 +28,9 @@
 
 (defn force-fetch-new-session [host-virkailija username password]
   (log/info "Fetching new CAS session for Ataru!")
-  (let [cs (clj-http.cookies/cookie-store)
-        service-ticket (-> (ticket-granting-ticket cs host-virkailija username password SESSION-FETCH-TIMEOUT CALLER-ID)
-                           (service-ticket cs (str host-virkailija "/lomake-editori/auth/cas") SESSION-FETCH-TIMEOUT CALLER-ID))
+  (let [cs (cookies/cookie-store)
+        service-ticket (-> (ticket-granting-ticket host-virkailija username password SESSION-FETCH-TIMEOUT CALLER-ID)
+                           (service-ticket (str host-virkailija "/lomake-editori/auth/cas") SESSION-FETCH-TIMEOUT CALLER-ID))
         auth-url (format "%s/lomake-editori/auth/cas?ticket=%s" host-virkailija service-ticket)
         auth-response (client/get auth-url
                         {:cookie-store cs
