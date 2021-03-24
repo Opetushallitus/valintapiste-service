@@ -55,24 +55,19 @@
     (throw (Exception. "Mandatory query params missing! (sessionId uid inetAddress userAgent)"))))
 
 (defn logProxyAuditSession [audit-logger operation sessionId uid inetAddress userAgent]
-      (do (log/info (str "Logging proxy audit session " operation  sessionId  uid  inetAddress  userAgent))
-          (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
-          (audit audit-logger operation sessionId uid inetAddress userAgent)))
+      (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
+      (audit audit-logger operation sessionId uid inetAddress userAgent))
 
 (defn logDirectAuditSession [audit-logger operation session]
       (let [sessionId (:key session)
             uid (get-in session [:identity :oid])
             inetAddress (:client-ip session)
             userAgent (:user-agent session)]
-           (do (log/info (str "Logging direct audit session " operation  sessionId  uid  inetAddress  userAgent))
-               (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
-               (audit audit-logger operation sessionId uid inetAddress userAgent))
-           )
-     )
+           (throwIfNullsInAuditSession [sessionId uid inetAddress userAgent])
+           (audit audit-logger operation sessionId uid inetAddress userAgent)))
 
 (defn logAuditSession
       [audit-logger operation sessionId uid inetAddress userAgent session config]
-      (log/info (str "Proxy users " (split (:proxy-users config) #",") ", username from session " (get-in session [:identity :username])))
       (if (or (:dev? config)
               (some #{(get-in session [:identity :username])} (split (:proxy-users config) #",")))
           (logProxyAuditSession audit-logger operation sessionId uid inetAddress userAgent)
@@ -88,7 +83,6 @@
     (internal-server-error (.getMessage e))))
 
 (defn check-authorization! [session dev?]
-      (log/info (str "checking auth" session))
       (when-not (or dev?
                     (some #(= "VALINTOJENTOTEUTTAMINEN-CRUD" %) (-> session :identity :rights)))
                 (do (log/warn "Missing user rights: " (-> session :identity :rights))
@@ -236,84 +230,6 @@
                                      (session-timeout/wrap-idle-session-timeout config)]
                                     (api-routes hakuapp ataruapp datasource config audit-logger))
                         (auth-routes login-cas-client session-store kayttooikeus-cas-client config))))))
-
-(defn app
-  "This is the App"
-  [hakuapp ataruapp datasource basePath]
-  (let [audit-logger (create-audit-logger)]
-    (api
-      {:swagger
-       {:ui   "/"
-        :spec "/swagger.json"
-        :data {:info {:title       "Valintapiste-service"
-                      :description "Pistetiedot"}
-               }}}
-
-      (context (str basePath "/api") []
-        :tags ["api"]
-
-        (GET "/healthcheck"
-             []
-          :summary "Healtcheck API"
-          (ok "OK"))
-
-        (GET "/haku/:hakuOID/hakukohde/:hakukohdeOID"
-             [hakuOID hakukohdeOID sessionId uid inetAddress userAgent]
-          :return [PistetietoWrapper]
-          :summary "Hakukohteen hakemusten pistetiedot"
-          (try
-            (do
-              (logProxyAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
-              (let [data (p/fetch-hakukohteen-pistetiedot hakuapp ataruapp datasource hakuOID hakukohdeOID)
-                    last-modified (-> data :last-modified)
-                    hakemukset (-> data :hakemukset)]
-                (add-last-modified (ok hakemukset) last-modified)))
-            (catch Exception e (log-exception-and-return-500 e))))
-
-        (POST "/pisteet-with-hakemusoids"
-              [hakuOID sessionId uid inetAddress userAgent]
-          :body [hakemusoids [s/Str]]
-          :return [PistetietoWrapper]
-          :summary "Hakukohteen hakemusten pistetiedot. Hakemusten maksimimäärä on 32767 kpl."
-          (try
-            (do
-              (logProxyAuditSession audit-logger "Hakukohteen hakemusten pistetiedot" sessionId uid inetAddress userAgent)
-              (let [data (p/fetch-hakemusten-pistetiedot datasource (map (fn [oid] {:oid oid :personOid ""}) hakemusoids))
-                    last-modified (-> data :last-modified)
-                    hakemukset (-> data :hakemukset)]
-                (add-last-modified (ok hakemukset) last-modified)))
-            (catch Exception e (log-exception-and-return-500 e))))
-
-        (GET "/hakemus/:hakemusOID/oppija/:oppijaOID"
-             [hakuOID hakemusOID oppijaOID sessionId uid inetAddress userAgent]
-          :return PistetietoWrapper
-          :summary "Hakemuksen pistetiedot"
-          (try
-            (do
-              (logProxyAuditSession audit-logger "Hakemuksen pistetiedot" sessionId uid inetAddress userAgent)
-              (let [data (p/fetch-hakemusten-pistetiedot datasource [{:oid hakemusOID :personOid oppijaOID}])
-                    last-modified (-> data :last-modified)
-                    hakemukset (-> data :hakemukset)]
-                (add-last-modified (ok (first hakemukset)) last-modified)))
-            (catch Exception e (log-exception-and-return-500 e))))
-
-        (PUT "/pisteet-with-hakemusoids"
-             [hakuOID hakukohdeOID sessionId uid inetAddress userAgent save-partially]
-          :body [uudet_pistetiedot [PistetietoWrapper]]
-          :headers [headers {s/Any s/Any}]
-          :summary "Syötä pistetiedot hakukohteen avaimilla"
-          (try
-            (do
-              (logProxyAuditSession audit-logger "Syötä pistetiedot hakukohteen avaimilla" sessionId uid inetAddress userAgent)
-              (let [conflicting-hakemus-oids (p/update-pistetiedot datasource uudet_pistetiedot (-> headers :if-unmodified-since) save-partially)]
-                (if (empty? conflicting-hakemus-oids)
-                  (if save-partially
-                    (ok conflicting-hakemus-oids)
-                    (ok))
-                  (if save-partially
-                    (ok conflicting-hakemus-oids)
-                    (conflict conflicting-hakemus-oids)))))
-            (catch Exception e (log-exception-and-return-500 e))))))))
 
 (def config-property "valintapisteservice-properties")
 
