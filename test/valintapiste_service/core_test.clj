@@ -18,9 +18,9 @@
         isOk (testdb/testConnection defaultConfig)
         finalConfig (if (-> isOk :connectionWorks) defaultConfig (update-in defaultConfig [:db :port] freeport/get-free-port))]
         (if (-> isOk :connectionWorks)
-          (do (log/info "PostgreSQL connection works! Using it for tests!")
+          (do (log/info "PostgreSQL connection works! Using it for tests! " finalConfig)
             {:datasource (pool/datasource finalConfig) :config finalConfig})
-          (do (log/info "Starting PostgreSQL for tests!")
+          (do (log/info "Starting PostgreSQL for tests! " finalConfig)
             (postgre/startPostgreSQL finalConfig)
             {:datasource (pool/datasource finalConfig) :config finalConfig}))))
 
@@ -77,7 +77,7 @@
   (let [mockedMongo (fn [hakuOID hakukohdeOID] [{:oid "testi-hakemus-1" :personOid "1.2.3.4"} {:oid "1.2.3.4" :personOid "1.2.3.4"}])
         mockedAtaru (fn [hakuOID hakukohdeOID] [])]
     (testing "Test GET /haku/.../hakukohde/... returns list of hakukohteen pistetiedot"
-      (let [response ((app mockedMongo mockedAtaru datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+      (let [response ((new-app mockedMongo mockedAtaru datasource "" config) (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
             headers (:headers response)
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
@@ -87,7 +87,7 @@
                      {:hakemusOID "1.2.3.4", :oppijaOID "1.2.3.4" :pisteet []}]))))
 
     (testing "Test GET /haku/.../hakukohde/... returns empty pistetiedot"
-      (let [response ((app (fn [hakuOID hakukohdeOID] []) mockedAtaru datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+      (let [response ((new-app (fn [hakuOID hakukohdeOID] []) mockedAtaru datasource "" config) (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
             headers (:headers response)
             body     (parse-body (:body response))]
             
@@ -95,18 +95,18 @@
         (is (= body []))))
 
     (testing "Test GET /haku/.../hakukohde/... returns one pistetieto (from hakuapp)"
-      (let [response ((app (fn [hakuOID hakukohdeOID] [{:oid "1.2.3.4" :personOid "1.2.3.5"}])
+      (let [response ((new-app (fn [hakuOID hakukohdeOID] [{:oid "1.2.3.4" :personOid "1.2.3.5"}])
                            (fn [hakuOID hakukohdeOID] [])
-                           datasource "") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+                           datasource "" config) (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
             headers (:headers response)
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
         (is (= body [{:hakemusOID "1.2.3.4", :oppijaOID "1.2.3.5" :pisteet []}]))))
 
     (testing "Test GET /haku/.../hakukohde/... returns one pistetieto (from ataru)"
-      (let [response ((app (fn [hakuOID hakukohdeOID] [])
+      (let [response ((new-app (fn [hakuOID hakukohdeOID] [])
                            (fn [hakuOID hakukohdeOID] [{"hakemus_oid" "1.2.3.4" "henkilo_oid" "1.2.3.5"}])
-                           datasource "") (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+                           datasource "" config) (-> (mock/request :get  "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
             headers (:headers response)
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
@@ -114,7 +114,7 @@
 
 
     (testing "Test GET /hakemus/... returns hakemuksen pistetiedot"
-      (let [response ((app mockedMongo mockedAtaru datasource "") (-> (mock/request :get "/api/hakemus/1.2.3.4/oppija/1.2.3.6" auditSession)))
+      (let [response ((new-app mockedMongo mockedAtaru datasource "" config) (-> (mock/request :get "/api/hakemus/1.2.3.4/oppija/1.2.3.6" auditSession)))
             headers (:headers response)
             body     (parse-body (:body response))]
         (is (= (:status response) 200))
@@ -122,7 +122,7 @@
     
     (testing "Test POST /pisteet-with-hakemusoids"
       (let [json-body (generate-string ["1.2.3.4"])
-            response ((app mockedMongo mockedAtaru datasource "")
+            response ((new-app mockedMongo mockedAtaru datasource "" config)
                       (-> (mock/request :post "/api/pisteet-with-hakemusoids" json-body)
                           (mock/query-string auditSession)
                           (mock/content-type "application/json")))
@@ -132,7 +132,7 @@
         (is (= body [{:hakemusOID "1.2.3.4" :oppijaOID "" :pisteet []}]))))
 
     (testing "Test PUT /pisteet-with-hakemusoids put pistetiedot for 'hakukohteen tunnisteet'"
-      (let [initial-get ((app mockedMongo mockedAtaru datasource "") (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
+      (let [initial-get ((new-app mockedMongo mockedAtaru datasource "" config) (-> (mock/request :get "/api/haku/1.2.3.4/hakukohde/1.2.3.4" auditSession)))
             headers (:headers initial-get)
             timestamp (get headers "Last-Modified");(.toString (org.joda.time.DateTime/now (org.joda.time.DateTimeZone/forID "Europe/Helsinki") ))
             json-body (generate-string [{:hakemusOID "UPDATE_TEST"
@@ -151,7 +151,7 @@
                                                     :arvo "B"
                                                     :osallistuminen "OSALLISTUI"
                                                     :tallettaja "1.2.3.4"}]}])
-            response ((app mockedMongo mockedAtaru datasource "")
+            response ((new-app mockedMongo mockedAtaru datasource "" config)
                       (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
                           (mock/query-string auditSession)
                           (mock/header "If-Unmodified-Since" timestamp) 
@@ -164,7 +164,7 @@
                                                       :arvo "UPDATE_SUCCEEDED!"
                                                       :osallistuminen "OSALLISTUI"
                                                       :tallettaja "1.2.3.4"}]}])
-            response ((app mockedMongo mockedAtaru datasource "")
+            response ((new-app mockedMongo mockedAtaru datasource "" config)
                       (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
                           (mock/query-string auditSession)
                           (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00") 
@@ -179,7 +179,7 @@
                                                     :arvo "UPDATE_SUCCEEDED!"
                                                     :osallistuminen "OSALLISTUI"
                                                     :tallettaja "1.2.3.4"}]}])
-            response ((app mockedMongo mockedAtaru datasource "")
+            response ((new-app mockedMongo mockedAtaru datasource "" config)
                        (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
                            (mock/query-string (merge auditSession {:save-partially "true"}))
                            (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00")
@@ -194,7 +194,7 @@
                                                     :arvo "UPDATE_SUCCEEDED!"
                                                     :osallistuminen "OSALLISTUI"
                                                     :tallettaja "1.2.3.4"}]}])
-            response ((app mockedMongo mockedAtaru datasource "")
+            response ((new-app mockedMongo mockedAtaru datasource "" config)
                        (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
                            (mock/query-string (merge auditSession {:save-partially "true"}))
                            (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00")
@@ -209,7 +209,7 @@
                                          :pisteet [{ :tunniste "TRY_TO_UPDATE"
                                                     :osallistuminen "OSALLISTUI"
                                                     :tallettaja "1.2.3.4"}]}])
-            response ((app mockedMongo mockedAtaru datasource "")
+            response ((new-app mockedMongo mockedAtaru datasource "" config)
                        (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
                            (mock/query-string (merge auditSession {:save-partially "true"}))
                            (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00")
@@ -230,7 +230,7 @@
                                                     :arvo "UPDATE_SUCCEEDED!"
                                                     :osallistuminen "OSALLISTUI"
                                                     :tallettaja "1.2.3.4"}]}])
-            response ((app mockedMongo mockedAtaru datasource "")
+            response ((new-app mockedMongo mockedAtaru datasource "" config)
                        (-> (mock/request :put "/api/pisteet-with-hakemusoids" json-body)
                            (mock/query-string (merge auditSession {:save-partially "true"}))
                            (mock/header "If-Unmodified-Since" "2017-10-04T14:36:01.059+03:00")

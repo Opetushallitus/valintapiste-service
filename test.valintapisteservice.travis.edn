@@ -8,4 +8,6 @@
       :port 5432}
  :mongo {:uri ""}
  :server {:port 8080}
-          :base-url "/valintapiste-service"}
+          :base-url "/valintapiste-service"
+ :proxy-users "valintalaskentakoostepalvelu"
+ :dev? true}
