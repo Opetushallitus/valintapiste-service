@@ -14,7 +14,7 @@
                   [ring/ring-jetty-adapter "1.6.2"]
                   [ring/ring-session-timeout "0.2.0"]
                   [oph/clj-ring-db-cas-session "0.3.0-SNAPSHOT"]
-                  [fi.vm.sade/scala-cas_2.12 "2.2.1-SNAPSHOT"]
+                  [fi.vm.sade/scala-cas_2.12 "2.2.2.1-SNAPSHOT"]
                   [com.novemberain/monger "3.1.0"]
                   [org.postgresql/postgresql "42.2.8"]
                   [yesql "0.5.3"]
