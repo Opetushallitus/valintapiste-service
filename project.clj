@@ -28,7 +28,8 @@
                   [clj-log4j2 "0.3.0"]
                   [clj-soup/clojure-soup "0.1.3"]
                   [org.flywaydb/flyway-core "4.2.0"]
-                  [webjure/jeesql "0.4.6"]]
+                  [webjure/jeesql "0.4.6"]
+                  [fi.vm.sade.dokumenttipalvelu/dokumenttipalvelu "6.12-SNAPSHOT"]]
    :prep-tasks ["compile"]
    ;:eval-in :classloader
    ;:bootclasspath true

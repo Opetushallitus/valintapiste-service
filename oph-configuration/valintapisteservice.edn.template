@@ -10,5 +10,8 @@
  :valintapiste-cas-password "{{valintalaskentakoostepalvelu_app_password_to_haku}}"
  :proxy-users "{{valintapisteservice_proxy_users}}"
  :mongo {:uri "mongodb://{{mongodb_hakemus_auth}}@{{mongodb_hakemus_host}}/hakulomake"}
+ :siirtotiedostot {:aws-region {{valintapisteservice_aws_region}}
+                   :s3-bucket {{valintapisteservice_siirtotiedosto_bucket}}
+                   :max-hakemuscount-in-file {{valintapisteservice_max_hakemuscount_in_file}}}
  :server {:port {{palvelu_portti}}
           :base-url "/valintapiste-service"}}

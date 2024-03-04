@@ -1,6 +1,8 @@
 (ns valintapiste-service.pistetiedot
   (:require [jeesql.core :refer [defqueries]]
-            [clojure.java.jdbc :as jdbc]))
+            [clojure.java.jdbc :as jdbc]
+            [clojure.string :refer [blank?]]
+            [valintapiste-service.siirtotiedosto :as siirtotiedosto]))
 
 (defqueries "queries.sql")
 
@@ -105,3 +107,26 @@
                                            (doseq [row rows]
                                                (upsert-valintapiste! tx (pistetieto-row-for-update row))))
                                          conflicting-hakemus-oids))] data)))
+
+(defn create-siirtotiedostot-for-pistetiedot
+  "Create siirtotiedosto containing pistetiedot hakemuksittain"
+  [datasource siirtotiedosto-client start-datetime end-datetime max-hakemuscount-in-file]
+  (if (> max-hakemuscount-in-file 32767) (throw (IllegalArgumentException. (str "Illegal value " max-hakemuscount-in-file " for number of hakemukset per file, max number is 32767!"))))
+  (let [connection {:datasource datasource}
+        rows (jdbc/with-db-transaction [tx connection]
+                                               (if-not (nil? start-datetime)
+                                                 (find-hakemus-oids-by-timerange tx {:start start-datetime :end end-datetime})
+                                                 (find-hakemus-oids-by-timelimit tx {:end end-datetime})))
+        hakemus-oids (map (fn [row] (:hakemus_oid row)) rows)
+        partitions (partition max-hakemuscount-in-file max-hakemuscount-in-file nil hakemus-oids)
+        results (map
+                  (fn [partition]
+                    (let [pistetiedot-for-partition
+                          (jdbc/with-db-transaction [tx connection]
+                                                    (find-valintapisteet-for-hakemukset tx {:hakemus-oids partition}))
+                          pistetiedot-by-hakemukset (parse-rows-by-hakemus-oid pistetiedot-for-partition)]
+                      (siirtotiedosto/create-siirtotiedosto
+                        siirtotiedosto-client start-datetime end-datetime pistetiedot-by-hakemukset))) partitions)]
+    {:keys (filter #(not (blank? %)) results)
+     :total (count hakemus-oids)
+     :success (every? #(not (blank? %)) results)}))

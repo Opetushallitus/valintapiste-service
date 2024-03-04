@@ -21,3 +21,13 @@ set arvo = :arvo,
     tallettaja = :tallettaja,
     system_time = tstzrange(now(), null, '[)')
 where valintapiste.hakemus_oid = :hakemus-oid and valintapiste.tunniste = :tunniste
+
+-- name: find-hakemus-oids-by-timerange
+-- Returns hakemusoids created/modified between given timerange
+select distinct(hakemus_oid) as hakemus_oid from valintapiste where lower(system_time) between :start::timestamptz and :end::timestamptz
+
+-- name: find-hakemus-oids-by-timelimit
+-- Returns hakemusoids created/modified before given timelimit
+select distinct(hakemus_oid) as hakemus_oid from valintapiste where lower(system_time) < :end::timestampz
+
+

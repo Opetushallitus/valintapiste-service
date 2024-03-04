@@ -11,6 +11,7 @@
               [clojure.string :as str]
               [valintapiste-service.pool :as pool]
               [schema.core :as s]
+              [schema-tools.core :as st]
               [valintapiste-service.hakuapp :as mongo]
               [valintapiste-service.ataru :as ataru]
               [valintapiste-service.db :as db]
@@ -24,12 +25,16 @@
               [ring.util.http-response :as response]
               [clj-ring-db-session.authentication.login :as crdsa-login]
               [valintapiste-service.auth.urls :as urls]
-              [clojure.string :refer [split]])
+              [clojure.string :refer [split]]
+              [clj-time.core :as t]
+              [clj-time.format :as f]
+              [valintapiste-service.siirtotiedosto :refer [datetime-parser datetime-format]])
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
             RequestLogHandler]
            (org.eclipse.jetty.server Slf4jRequestLog)
-           (fi.vm.sade.auditlog Audit ApplicationType))
+           (fi.vm.sade.auditlog Audit ApplicationType)
+           (fi.vm.sade.valinta.dokumenttipalvelu SiirtotiedostoPalvelu))
   (:gen-class))
 
 (def jul-over-slf4j (do (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -48,6 +53,18 @@
    (s/optional-key :etunimet)  s/Str
    (s/optional-key :oppijaOID) s/Str
    :pisteet                    [Pistetieto]})
+
+(defn parseDatetime
+  ([datetimeStr fieldDesc]
+   (parseDatetime datetimeStr fieldDesc nil))
+  ([datetimeStr fieldDesc default]
+  (if-not (nil? datetimeStr)
+    (try (f/parse datetime-parser datetimeStr)
+       (catch java.lang.IllegalArgumentException _
+         (response/bad-request!
+           (str "Illegal " fieldDesc " '" datetimeStr "', allowed format: '" datetime-format "'"))))
+    default
+    )))
 
 (defn throwIfNullsInAuditSession [auditSession]
   (if (not-any? nil? auditSession)
@@ -114,7 +131,7 @@
                              (GET "/logout" {session :session}
                                   (crdsa-login/logout session (urls/cas-logout-url config)))))))
 
-(defn api-routes [hakuapp ataruapp datasource config audit-logger]
+(defn api-routes [hakuapp ataruapp datasource config audit-logger siirtotiedosto-client]
       (let [dev? (:dev? config)]
            (context "/api" []
                     :tags ["api"]
@@ -176,6 +193,20 @@
                                   (add-last-modified (ok (first hakemukset)) last-modified)))
                            (catch Exception e (log-exception-and-return-500 e))))
 
+                    (GET "/siirtotiedosto" {session :session}
+                      :query-params [{sessionId :- s/Str nil}
+                                         {uid :- s/Str nil}
+                                         {inetAddress :- s/Str nil}
+                                         {userAgent :- s/Str nil}
+                                         {startDateTime :- s/Str nil}
+                                         {endDateTime :- s/Str nil}]
+                      :summary "Tallentaa annetulla aikavälillä luodut / muokatut pistetiedot hakemuksittain siirtotiedostoon"
+                      (check-authorization! session dev?)
+                      (let [start (parseDatetime startDateTime "startDateTime")
+                            end (parseDatetime endDateTime "endDateTime" (t/now))]
+                        (ok (p/create-siirtotiedostot-for-pistetiedot datasource siirtotiedosto-client start end (-> config :siirtotiedostot :max-hakemuscount-in-file)))
+                        ))
+
                     (PUT "/pisteet-with-hakemusoids" {session :session}
                          :body [uudet_pistetiedot [PistetietoWrapper]]
                          :query-params [{sessionId :- s/Str nil}
@@ -206,7 +237,10 @@
             login-cas-client (delay (cas/new-cas-client config))
             kayttooikeus-cas-client (delay (cas/new-client "/kayttooikeus-service" "j_spring_cas_security_check"
                                                            "JSESSIONID" config))
-            audit-logger (create-audit-logger)]
+            audit-logger (create-audit-logger)
+            siirtotiedosto-client (new SiirtotiedostoPalvelu
+                                        (-> config :siirtotiedostot :aws-region)
+                                        (-> config :siirtotiedostot :s3-bucket))]
            (log/info (str "Starting new app with dev mode " dev?))
            (api
              {:swagger
@@ -228,7 +262,7 @@
                                    #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                         (middleware [session-client/wrap-session-client-headers
                                      (session-timeout/wrap-idle-session-timeout config)]
-                                    (api-routes hakuapp ataruapp datasource config audit-logger))
+                                    (api-routes hakuapp ataruapp datasource config audit-logger siirtotiedosto-client))
                         (auth-routes login-cas-client session-store kayttooikeus-cas-client config))))))
 
 (def config-property "valintapisteservice-properties")

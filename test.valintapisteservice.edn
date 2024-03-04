@@ -10,4 +10,7 @@
  :server {:port 8080}
           :base-url "/valintapiste-service"
  :dev? true
- :proxy-users "valintalaskentakoostepalvelu"}
+ :proxy-users "valintalaskentakoostepalvelu"
+ :siirtotiedostot {:aws-region "eu-west-1"
+                   :s3-bucket "opintopolku-test-dokumenttipalvelu"
+                   :max-hakemuscount-in-file 10000}}
