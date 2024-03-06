@@ -11,11 +11,9 @@
               [clojure.string :as str]
               [valintapiste-service.pool :as pool]
               [schema.core :as s]
-              [schema-tools.core :as st]
               [valintapiste-service.hakuapp :as mongo]
               [valintapiste-service.ataru :as ataru]
               [valintapiste-service.db :as db]
-              [environ.core :refer [env]]
               [clj-ring-db-session.session.session-store :refer [create-session-store]]
               [clj-ring-db-session.authentication.auth-middleware :as crdsa-auth-middleware]
               [clj-ring-db-session.session.session-client :as session-client]
@@ -239,8 +237,8 @@
                                                            "JSESSIONID" config))
             audit-logger (create-audit-logger)
             siirtotiedosto-client (new SiirtotiedostoPalvelu
-                                        (-> config :siirtotiedostot :aws-region)
-                                        (-> config :siirtotiedostot :s3-bucket))]
+                                        (str (-> config :siirtotiedostot :aws-region))
+                                        (str (-> config :siirtotiedostot :s3-bucket)))]
            (log/info (str "Starting new app with dev mode " dev?))
            (api
              {:swagger
