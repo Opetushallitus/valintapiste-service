@@ -2,8 +2,6 @@
 # Created by https://www.gitignore.io/api/code,emacs,clojure,leiningen,jetbrains+all
 
 ### Clojure ###
-pom.xml
-pom.xml.asc
 *.class
 /lib/
 /classes/
@@ -150,3 +148,6 @@ fabric.properties
 # End of https://www.gitignore.io/api/code,emacs,clojure,leiningen,jetbrains+all
 
 *.iml
+.DS_Store
+.clj-kondo
+.lsp
