@@ -30,8 +30,6 @@
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
             RequestLogHandler]
-           (org.eclipse.jetty.server Slf4jRequestLog)
-           (fi.vm.sade.auditlog Audit ApplicationType)
            (fi.vm.sade.valinta.dokumenttipalvelu SiirtotiedostoPalvelu))
   (:gen-class))
 

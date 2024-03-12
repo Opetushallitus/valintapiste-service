@@ -126,7 +126,7 @@
                                                     (find-valintapisteet-for-hakemukset tx {:hakemus-oids partition}))
                           pistetiedot-by-hakemukset (parse-rows-by-hakemus-oid pistetiedot-for-partition)]
                       (siirtotiedosto/create-siirtotiedosto
-                        siirtotiedosto-client start-datetime end-datetime pistetiedot-by-hakemukset))) partitions)]
+                        siirtotiedosto-client pistetiedot-by-hakemukset))) partitions)]
     {:keys (filter #(not (blank? %)) results)
      :total (count hakemus-oids)
      :success (every? #(not (blank? %)) results)}))
