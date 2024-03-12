@@ -198,10 +198,14 @@
                                          {endDateTime :- s/Str nil}]
                       :summary "Tallentaa annetulla aikavälillä luodut / muokatut pistetiedot hakemuksittain siirtotiedostoon"
                       (check-authorization! session dev?)
-                      (let [start (parseDatetime startDateTime "startDateTime")
-                            end (parseDatetime endDateTime "endDateTime" (t/now))]
-                        (ok (p/create-siirtotiedostot-for-pistetiedot datasource siirtotiedosto-client start end (-> config :siirtotiedostot :max-hakemuscount-in-file)))
-                        ))
+                      (try
+                        (do
+                          (logAuditSession audit-logger "Siirtotiedostot" sessionId uid inetAddress userAgent session config)
+                          (let [start (parseDatetime startDateTime "startDateTime")
+                                end (parseDatetime endDateTime "endDateTime" (t/now))]
+                            (ok (p/create-siirtotiedostot-for-pistetiedot
+                                  datasource siirtotiedosto-client start end (-> config :siirtotiedostot :max-hakemuscount-in-file)))))
+                        (catch Exception e (log-exception-and-return-500 e))))
 
                     (PUT "/pisteet-with-hakemusoids" {session :session}
                          :body [uudet_pistetiedot [PistetietoWrapper]]
