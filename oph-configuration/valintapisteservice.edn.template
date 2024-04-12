@@ -12,6 +12,7 @@
  :mongo {:uri "mongodb://{{mongodb_hakemus_auth}}@{{mongodb_hakemus_host}}/hakulomake"}
  :siirtotiedostot {:aws-region {{valintapisteservice_aws_region}}
                    :s3-bucket {{valintapisteservice_siirtotiedosto_bucket}}
+                   :s3-target-role-arn {{valintapisteservice_siirtotiedosto_target_role_arn}}
                    :max-hakemuscount-in-file {{valintapisteservice_max_hakemuscount_in_file}}}
  :server {:port {{palvelu_portti}}
           :base-url "/valintapiste-service"}}
