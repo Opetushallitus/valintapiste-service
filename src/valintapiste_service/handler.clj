@@ -240,7 +240,8 @@
             audit-logger (create-audit-logger)
             siirtotiedosto-client (new SiirtotiedostoPalvelu
                                         (str (-> config :siirtotiedostot :aws-region))
-                                        (str (-> config :siirtotiedostot :s3-bucket)))]
+                                        (str (-> config :siirtotiedostot :s3-bucket))
+                                        (str (-> config :siirtotiedostot :s3-target-role-arn)))]
            (log/info (str "Starting new app with dev mode " dev?))
            (api
              {:swagger
