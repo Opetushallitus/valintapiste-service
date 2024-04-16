@@ -11,7 +11,7 @@
 (defn create-siirtotiedosto [^SiirtotiedostoPalvelu siirtotiedosto-client pistetiedot]
   (let [json (json/generate-string pistetiedot)
         stream (input-stream (.getBytes json))]
-    (try (. (.saveSiirtotiedosto siirtotiedosto-client "valintapiste-service" "pistetieto" "" stream 2) key)
+    (try (. (.saveSiirtotiedosto siirtotiedosto-client "valintapiste_service" "pistetieto" "" stream 2) key)
          (catch Exception e
            (log/error (str "Transform file creation failed: " (.getMessage e)))
            ""
