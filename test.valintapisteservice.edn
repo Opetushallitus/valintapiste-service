@@ -13,4 +13,5 @@
  :proxy-users "valintalaskentakoostepalvelu"
  :siirtotiedostot {:aws-region "eu-west-1"
                    :s3-bucket "opintopolku-test-dokumenttipalvelu"
+                   :s3-target-role-arn "arn:aws:iam::xxxxxxxxxxxx:role/opintopolku-s3-cross-account-role"
                    :max-hakemuscount-in-file 10000}}
