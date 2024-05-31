@@ -34,7 +34,8 @@
    ;:eval-in :classloader
    ;:bootclasspath true
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
-             "migrate" ["run" "-m" "valintapiste-service.db/migrate"]}
+             "migrate" ["run" "-m" "valintapiste-service.db/migrate"]
+             "siirtotiedostot" ["with-profile" "siirtotiedostot" "run"]}
    :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "valintapiste-service-0.1.0-SNAPSHOT-standalone.jar"
@@ -57,5 +58,6 @@
               :dev {:dependencies [[javax.servlet/javax.servlet-api "3.1.0"]
                                   [org.clojure/java.jdbc "0.7.1"]
                                   [ru.yandex.qatools.embed/postgresql-embedded "2.4"]
-                                  [ring/ring-mock "0.3.1"]]}})
+                                  [ring/ring-mock "0.3.1"]]}
+              :siirtotiedostot {:main valintapiste-service.siirtotiedosto-app}})
 

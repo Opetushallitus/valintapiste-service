@@ -26,11 +26,11 @@
               [clojure.string :refer [split]]
               [clj-time.core :as t]
               [clj-time.format :as f]
-              [valintapiste-service.siirtotiedosto :refer [datetime-parser datetime-format]])
+              [valintapiste-service.siirtotiedosto :refer [create-siirtotiedosto-client datetime-parser datetime-format]])
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
             RequestLogHandler]
-           (fi.vm.sade.valinta.dokumenttipalvelu SiirtotiedostoPalvelu))
+            java.util.UUID)
   (:gen-class))
 
 (def jul-over-slf4j (do (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -50,17 +50,14 @@
    (s/optional-key :oppijaOID) s/Str
    :pisteet                    [Pistetieto]})
 
-(defn parseDatetime
-  ([datetimeStr fieldDesc]
-   (parseDatetime datetimeStr fieldDesc nil))
-  ([datetimeStr fieldDesc default]
+(defn parse-datetime
+  [datetimeStr fieldDesc default]
   (if-not (nil? datetimeStr)
     (try (f/parse datetime-parser datetimeStr)
        (catch java.lang.IllegalArgumentException _
          (response/bad-request!
            (str "Illegal " fieldDesc " '" datetimeStr "', allowed format: '" datetime-format "'"))))
-    default
-    )))
+    default))
 
 (defn throwIfNullsInAuditSession [auditSession]
   (if (not-any? nil? auditSession)
@@ -196,15 +193,20 @@
                                          {userAgent :- s/Str nil}
                                          {startDateTime :- s/Str nil}
                                          {endDateTime :- s/Str nil}]
-                      :summary "Tallentaa annetulla aikavälillä luodut / muokatut pistetiedot hakemuksittain siirtotiedostoon"
+                      :summary "Tallentaa annetulla aikavälillä luodut / muokatut pistetiedot hakemuksittain siirtotiedostoihin"
                       (check-authorization! session dev?)
                       (try
                         (do
                           (logAuditSession audit-logger "Siirtotiedostot" sessionId uid inetAddress userAgent session config)
-                          (let [start (parseDatetime startDateTime "startDateTime")
-                                end (parseDatetime endDateTime "endDateTime" (t/now))]
+                          (let [start (parse-datetime startDateTime "startDateTime" (t/epoch))
+                                end (parse-datetime endDateTime "endDateTime" (t/now))]
                             (ok (p/create-siirtotiedostot-for-pistetiedot
-                                  datasource siirtotiedosto-client start end (-> config :siirtotiedostot :max-hakemuscount-in-file)))))
+                                  datasource
+                                  siirtotiedosto-client
+                                  start
+                                  end
+                                  (-> config :siirtotiedostot :max-hakemuscount-in-file)
+                                  (str (UUID/randomUUID))))))
                         (catch Exception e (log-exception-and-return-500 e))))
 
                     (PUT "/pisteet-with-hakemusoids" {session :session}
@@ -238,10 +240,7 @@
             kayttooikeus-cas-client (delay (cas/new-client "/kayttooikeus-service" "j_spring_cas_security_check"
                                                            "JSESSIONID" config))
             audit-logger (create-audit-logger)
-            siirtotiedosto-client (new SiirtotiedostoPalvelu
-                                        (str (-> config :siirtotiedostot :aws-region))
-                                        (str (-> config :siirtotiedostot :s3-bucket))
-                                        (str (-> config :siirtotiedostot :s3-target-role-arn)))]
+            siirtotiedosto-client (create-siirtotiedosto-client config)]
            (log/info (str "Starting new app with dev mode " dev?))
            (api
              {:swagger
