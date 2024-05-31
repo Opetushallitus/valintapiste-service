@@ -5,7 +5,7 @@ select hakemus_oid, tunniste, arvo, osallistuminen, tallettaja from valintapiste
 
 -- name: find-valintapiste-bulk-by-timerange
 -- Returns valintapisteet by timerange
-select hakemus_oid, tunniste, arvo, osallistuminen, tallettaja from valintapiste
+select hakemus_oid, tunniste, arvo, osallistuminen, tallettaja, lower(system_time) as last_modified from valintapiste
 where lower(system_time) >= :start::timestamptz and lower(system_time) < :end::timestamptz limit :limit offset :offset
 
 -- name: last-modified-for-hakemukset
