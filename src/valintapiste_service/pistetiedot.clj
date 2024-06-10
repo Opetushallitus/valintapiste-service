@@ -1,6 +1,9 @@
 (ns valintapiste-service.pistetiedot
   (:require [jeesql.core :refer [defqueries]]
-            [clojure.java.jdbc :as jdbc]))
+            [clojure.java.jdbc :as jdbc]
+            [clojure.string :refer [blank?]]
+            [clojure.tools.logging :as log]
+            [valintapiste-service.siirtotiedosto :as siirtotiedosto]))
 
 (defqueries "queries.sql")
 
@@ -105,3 +108,44 @@
                                            (doseq [row rows]
                                                (upsert-valintapiste! tx (pistetieto-row-for-update row))))
                                          conflicting-hakemus-oids))] data)))
+
+(defn- parse-deleted-hakemus-oids
+  [hakemus-oids]
+  (map (fn [hakemus-oid] {:hakemusOID (:hakemus_oid hakemus-oid) :poistettu true}) hakemus-oids))
+
+(defn create-siirtotiedostot-for-pistetiedot
+  "Create siirtotiedosto containing pistetiedot hakemuksittain"
+  [datasource siirtotiedosto-client start-datetime end-datetime max-hakemuscount-in-file execution-id]
+  (let [connection {:datasource datasource}
+        offset-counter (atom 0)
+        keys (atom [])
+        sql-base-params {:start start-datetime :end end-datetime :limit max-hakemuscount-in-file}
+        next-bulk (fn [offset]
+                    (jdbc/with-db-transaction [tx connection]
+                                              (let [sql-params (merge sql-base-params {:offset offset})]
+                                                (find-valintapiste-bulk-by-timerange tx sql-params))))
+        results (atom (next-bulk @offset-counter))
+        create-siirtotiedosto (partial siirtotiedosto/create-siirtotiedosto siirtotiedosto-client execution-id)]
+        (try
+          (while (> (count @results) 0)
+               (do
+                 (swap! offset-counter + (count @results))
+                 (swap! keys conj (create-siirtotiedosto
+                                    (+ 1 (count @keys))
+                                    (parse-rows-by-hakemus-oid @results)))
+                 (reset! results (next-bulk @offset-counter))))
+          (let [deleted (jdbc/with-db-transaction [tx connection] (find-deleted tx {:start start-datetime
+                                                                                    :end end-datetime}))]
+            (when (seq deleted)
+              (do
+                (swap! keys conj (create-siirtotiedosto (+ 1 (count @keys)) (parse-deleted-hakemus-oids deleted)))
+                (swap! offset-counter + (count deleted)))))
+          {:keys (filter #(not (blank? %)) @keys)
+            :total @offset-counter
+            :success true}
+        (catch Exception e
+          (log/error (str "Transform file creation failed: " (.getMessage e)))
+          {:keys []
+           :total 0
+           :success false
+           :error-msg (.getMessage e)}))))

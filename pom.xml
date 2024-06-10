@@ -11,7 +11,7 @@
     <url>https://github.com/Opetushallitus/valintapiste-service</url>
     <connection>scm:git:git://github.com/Opetushallitus/valintapiste-service.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/valintapiste-service.git</developerConnection>
-    <tag>f40f251e30a9ea216c14081043ecdcc6f1df6e99</tag>
+    <tag>7dfa092cf716d536f31c6f83d667864725548c87</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -210,6 +210,11 @@
       <groupId>webjure</groupId>
       <artifactId>jeesql</artifactId>
       <version>0.4.6</version>
+    </dependency>
+    <dependency>
+      <groupId>fi.vm.sade.dokumenttipalvelu</groupId>
+      <artifactId>dokumenttipalvelu</artifactId>
+      <version>6.12-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
