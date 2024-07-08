@@ -10,7 +10,8 @@
             [valintapiste-service.handler :refer [read-config-file-from-args]]
             [valintapiste-service.pistetiedot :as p]
             [valintapiste-service.siirtotiedosto :refer [create-siirtotiedosto-client datetime-parser]])
-  (:import java.util.UUID))
+  (:import java.util.UUID)
+  (:gen-class))
 
 (defqueries "queries.sql")
 
