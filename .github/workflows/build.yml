@@ -76,7 +76,7 @@ jobs:
           export BASE_IMAGE="baseimage-fatjar-openjdk11:master"
           ./ci-tools/common/pull-image.sh
           mv target/ovara-valintapiste-service-*-standalone.jar $DOCKER_BUILD_DIR/artifact/ovara-valintapiste.jar
-          cp -vr oph-configuration $DOCKER_BUILD_DIR/config/ 
+          cp -vr ovara-valintapiste/oph-configuration $DOCKER_BUILD_DIR/config/ 
           ./ci-tools/github-build/build-fatjar.sh ovara-valintapiste
           ./ci-tools/github-build/upload-image.sh ovara-valintapiste
           ./ci-tools/common/clean-docker-build-dir.sh
