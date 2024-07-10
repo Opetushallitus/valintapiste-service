@@ -46,7 +46,7 @@
         start-datetime (if (:window_start new-siirtotiedosto-data)
                          (f/parse datetime-parser (:window_start new-siirtotiedosto-data))
                          (t/epoch))]
-    (log/info (str "Launching siirtotiedosto operation " execution-id))
+    (log/info (str "Launching siirtotiedosto operation " execution-id ". Previous data: " (first last-siirtotiedosto-data) ", new data " new-siirtotiedosto-data))
     (upsert-data new-siirtotiedosto-data)
     (let [updated-siirtotiedosto-data (->> (p/create-siirtotiedostot-for-pistetiedot datasource
                                                             siirtotiedosto-client
