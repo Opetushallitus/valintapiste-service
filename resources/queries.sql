@@ -28,9 +28,9 @@ set arvo = :arvo,
 where valintapiste.hakemus_oid = :hakemus-oid and valintapiste.tunniste = :tunniste
 
 -- name: latest-siirtotiedosto-data
--- Returns latest siirtotiedosto-operation data
-select id,  window_start, window_end, run_start, run_end, info, success, error_message from siirtotiedostot
-where run_start = (select max(run_start) from siirtotiedostot)
+-- Returns latest successful siirtotiedosto-operation data
+select id, window_start, window_end, run_start, run_end, info, success, error_message from siirtotiedostot
+where success order by run_start desc limit 1;
 
 -- name: upsert-siirtotiedosto-data!
 -- Upserts siirtotiedosto-operation data
@@ -44,7 +44,7 @@ set window_start = :window_start,
     run_end = :run_end,
     info = :info,
     success = :success,
-    error_message = :error_message
+    error_message = :error_message;
 
 -- name: find-deleted
 -- Returns hakemusOids deleted in given timerange
