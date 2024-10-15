@@ -2,6 +2,7 @@
   (:require [jeesql.core :refer [defqueries]]
             [clojure.java.jdbc :as jdbc]
             [valintapiste-service.config :as c]
+            [valintapiste-service.db :as db]
             [valintapiste-service.pool :as pool]
             [clj-time.core :as t]
             [clj-time.format :as f]
@@ -46,6 +47,7 @@
         start-datetime (if (:window_start new-siirtotiedosto-data)
                          (f/parse datetime-parser (:window_start new-siirtotiedosto-data))
                          (t/epoch))]
+    (db/migrate datasource)
     (log/info (str "Launching siirtotiedosto operation " execution-id ". Previous data: " (first last-siirtotiedosto-data) ", new data " new-siirtotiedosto-data))
     (upsert-data new-siirtotiedosto-data)
     (let [updated-siirtotiedosto-data (->> (p/create-siirtotiedostot-for-pistetiedot datasource
