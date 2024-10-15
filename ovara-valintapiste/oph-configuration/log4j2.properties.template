@@ -1,0 +1,22 @@
+status = info
+name= properties_configuration
+
+# Give directory path where log files should get stored
+property.basePath = ${sys:user.home}/logs
+
+# ConsoleAppender will print logs on console
+appender.console.type = Console
+appender.console.name = consoleLogger
+appender.console.target = SYSTEM_OUT
+appender.console.layout.type = PatternLayout
+appender.console.filter.threshold.type = ThresholdFilter
+appender.console.filter.threshold.level = info
+
+# Specify the pattern of the logs
+appender.console.layout.pattern = %d{yyyy-MM-dd'T'HH:mm:ss.SSSX} %5p %c{1}:%L - %m%n
+
+# Configure root logger for logging error logs in classes which are in package other than above specified package
+rootLogger.level = info
+rootLogger.additivity = false
+rootLogger.appenderRef.console.ref = consoleLogger
+

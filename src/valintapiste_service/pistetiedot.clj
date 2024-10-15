@@ -116,6 +116,7 @@
 (defn create-siirtotiedostot-for-pistetiedot
   "Create siirtotiedosto containing pistetiedot hakemuksittain"
   [datasource siirtotiedosto-client start-datetime end-datetime max-hakemuscount-in-file execution-id]
+  (log/info execution-id "Creating siirtotiedosto(s)," start-datetime "-" end-datetime "max per file" max-hakemuscount-in-file)
   (let [connection {:datasource datasource}
         offset-counter (atom 0)
         keys (atom [])
@@ -129,6 +130,7 @@
         (try
           (while (> (count @results) 0)
                (do
+                 (log/info execution-id "Forming siirtotiedosto, offset" @offset-counter)
                  (swap! offset-counter + (count @results))
                  (swap! keys conj (create-siirtotiedosto
                                     (+ 1 (count @keys))

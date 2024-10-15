@@ -1,0 +1,14 @@
+{:host-virkailija "https://{{host_virkailija}}"
+ :db {:schema "public"
+      :servername "{{host_postgresql_valintapisteservice}}"
+      :databasename "{{host_postgresql_valintapisteservice_dbname}}"
+      :username "{{postgres_app_user}}"
+      :password "{{host_postgresql_valintapisteservice_app_password}}"
+      :maximum-pool-size {{host_postgresql_valintapisteservice_max_active}}
+      :port {{host_postgresql_valintapisteservice_port}}}
+ :siirtotiedostot {:aws-region {{aws_region}}
+                   :s3-bucket {{ovara_siirtotiedosto_s3_bucket}}
+                   :s3-target-role-arn "{{ovara_siirtotiedosto_s3_target_role_arn}}"
+                   :max-hakemuscount-in-file {{valintapisteservice_max_hakemuscount_in_file}}}
+ :server {:port {{palvelu_portti}}
+          :base-url "/valintapiste-service"}}

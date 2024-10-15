@@ -33,7 +33,7 @@ jobs:
           #psql -d valintapiste_test -f init_travis_potsgres.sql
           #cp -v test.valintapisteservice.travis.edn test.valintapisteservice.edn
           lein test
-          lein do clean, uberjar
+          lein do clean, with-profile service:siirtotiedostot uberjar
 
       - uses: actions/cache@v2
         id: restore-build
@@ -65,10 +65,18 @@ jobs:
           git clone https://github.com/Opetushallitus/ci-tools.git
           source ci-tools/common/setup-tools.sh
 
-          export BASE_IMAGE="baseimage-fatjar-openjdk8:master"
+          export BASE_IMAGE="baseimage-fatjar-openjdk11:master"
           ./ci-tools/common/pull-image.sh
           mv target/valintapiste-service-*-standalone.jar $DOCKER_BUILD_DIR/artifact/valintapiste-service.jar
           cp -vr oph-configuration $DOCKER_BUILD_DIR/config/ 
           ./ci-tools/github-build/build-fatjar.sh valintapiste-service
           ./ci-tools/github-build/upload-image.sh valintapiste-service
+          ./ci-tools/common/clean-docker-build-dir.sh
+          
+          export BASE_IMAGE="baseimage-fatjar-openjdk11:master"
+          ./ci-tools/common/pull-image.sh
+          mv target/ovara-valintapiste-service-*-standalone.jar $DOCKER_BUILD_DIR/artifact/ovara-valintapiste.jar
+          cp -vr ovara-valintapiste/oph-configuration $DOCKER_BUILD_DIR/config/ 
+          ./ci-tools/github-build/build-fatjar.sh ovara-valintapiste
+          ./ci-tools/github-build/upload-image.sh ovara-valintapiste
           ./ci-tools/common/clean-docker-build-dir.sh
