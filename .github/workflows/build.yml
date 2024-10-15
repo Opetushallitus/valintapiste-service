@@ -65,7 +65,7 @@ jobs:
           git clone https://github.com/Opetushallitus/ci-tools.git
           source ci-tools/common/setup-tools.sh
 
-          export BASE_IMAGE="baseimage-fatjar-openjdk8:master"
+          export BASE_IMAGE="baseimage-fatjar-openjdk11:master"
           ./ci-tools/common/pull-image.sh
           mv target/valintapiste-service-*-standalone.jar $DOCKER_BUILD_DIR/artifact/valintapiste-service.jar
           cp -vr oph-configuration $DOCKER_BUILD_DIR/config/ 

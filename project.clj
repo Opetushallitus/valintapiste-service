@@ -36,7 +36,6 @@
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]
              "siirtotiedostot" ["with-profile" "siirtotiedostot" "run"]}
-   :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "valintapiste-service-0.1.0-SNAPSHOT-standalone.jar"
    :resource-paths ["resources"]
