@@ -11,7 +11,7 @@
     <url>https://github.com/Opetushallitus/valintapiste-service</url>
     <connection>scm:git:git://github.com/Opetushallitus/valintapiste-service.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/valintapiste-service.git</developerConnection>
-    <tag>7dfa092cf716d536f31c6f83d667864725548c87</tag>
+    <tag>6bdc1cbd9b2cc19ae1738ae655a7bec4245bc77d</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -83,7 +83,18 @@
     </repository>
   </repositories>
   <dependencyManagement>
-    <dependencies/>
+    <dependencies>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.9.10.4</version>
+      </dependency>
+      <dependency>
+        <groupId>com.typesafe.akka</groupId>
+        <artifactId>akka-actor_2.12</artifactId>
+        <version>2.5.16</version>
+      </dependency>
+    </dependencies>
   </dependencyManagement>
   <dependencies>
     <dependency>
@@ -94,7 +105,7 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
-      <version>1.8.0</version>
+      <version>1.9.0</version>
     </dependency>
     <dependency>
       <groupId>clj-http</groupId>
@@ -124,7 +135,7 @@
     <dependency>
       <groupId>ring</groupId>
       <artifactId>ring-jetty-adapter</artifactId>
-      <version>1.6.2</version>
+      <version>1.13.0</version>
     </dependency>
     <dependency>
       <groupId>ring</groupId>
@@ -149,7 +160,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.2.8</version>
+      <version>42.7.4</version>
     </dependency>
     <dependency>
       <groupId>yesql</groupId>
