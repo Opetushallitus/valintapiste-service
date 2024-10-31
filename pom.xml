@@ -11,7 +11,7 @@
     <url>https://github.com/Opetushallitus/valintapiste-service</url>
     <connection>scm:git:git://github.com/Opetushallitus/valintapiste-service.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/valintapiste-service.git</developerConnection>
-    <tag>6bdc1cbd9b2cc19ae1738ae655a7bec4245bc77d</tag>
+    <tag>7ee4c127704e8c26daff0f4e9954a857156a68a6</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -93,6 +93,11 @@
         <groupId>com.typesafe.akka</groupId>
         <artifactId>akka-actor_2.12</artifactId>
         <version>2.5.16</version>
+      </dependency>
+      <dependency>
+        <groupId>org.clojure</groupId>
+        <artifactId>core.async</artifactId>
+        <version>0.3.443</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
