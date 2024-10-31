@@ -8,7 +8,7 @@
    :managed-dependencies [[com.fasterxml.jackson.core/jackson-databind "2.9.10.4"]
                           [com.typesafe.akka/akka-actor_2.12 "2.5.16"]
                           [org.clojure/core.async"0.3.443"]]
-   :dependencies [[org.clojure/clojure "1.9.0"]
+   :dependencies [[org.clojure/clojure "1.12.0"]
                   [clj-http "3.10.0"]
                   [environ "1.1.0"]
                   [cheshire "5.8.0"]
