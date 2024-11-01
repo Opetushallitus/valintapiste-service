@@ -11,7 +11,7 @@
     <url>https://github.com/Opetushallitus/valintapiste-service</url>
     <connection>scm:git:git://github.com/Opetushallitus/valintapiste-service.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/valintapiste-service.git</developerConnection>
-    <tag>7ee4c127704e8c26daff0f4e9954a857156a68a6</tag>
+    <tag>9dbfcb22f35199d70309d9a20c4bec7e3644971e</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -110,7 +110,7 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
-      <version>1.9.0</version>
+      <version>1.12.0</version>
     </dependency>
     <dependency>
       <groupId>clj-http</groupId>
