@@ -4,7 +4,7 @@
   (:import [org.eclipse.jetty.server.handler
             HandlerCollection
             RequestLogHandler]
-           (org.eclipse.jetty.server CustomRequestLog)))
+           (org.eclipse.jetty.server Slf4jRequestLogWriter)))
 
 (def ^{:private true} access-logger-impl (impl/get-logger (impl/find-factory) "ACCESS"))
 
@@ -14,7 +14,7 @@
                                  (str v))])))
 
 (defn access-logger [environment]
-  (proxy [CustomRequestLog] []
+  (proxy [Slf4jRequestLogWriter] []
     (log [req resp]
       (let [message (nil-to-slash {:timestamp (.print (org.joda.time.format.ISODateTimeFormat/dateTime) (System/currentTimeMillis))
                                    :responseCode (.getStatus resp)
