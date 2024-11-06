@@ -32,12 +32,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.4.1208</version>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>42.1.4</version>
+            <version>42.7.4</version>
             <!-- ConnectionFactoryImpl.java:265 -->
         </dependency>
         <dependency>

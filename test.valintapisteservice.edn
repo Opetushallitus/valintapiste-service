@@ -6,7 +6,7 @@
       :password "test"
       :maximum-pool-size 4
       :port 55432}
- :mongo {:uri ""}
+ :mongo {:uri "mongodb://localhost:27017/admin"}
  :server {:port 8080}
           :base-url "/valintapiste-service"
  :dev? true
