@@ -13,5 +13,6 @@
     ([]
     (readConfigurationFromPath (env :valintapisteservice-properties)))
     ([config-file]
+     (println (str (readConfigurationFromPath config-file)))
     (readConfigurationFromPath config-file)))
-        
+

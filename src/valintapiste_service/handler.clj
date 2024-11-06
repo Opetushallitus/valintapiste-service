@@ -1,36 +1,38 @@
 (ns valintapiste-service.handler
-    (:require [compojure.api.sweet :refer :all]
-              [valintapiste-service.access :refer [access-logger]]
-              [valintapiste-service.audit :refer [audit create-audit-logger]]
-              [valintapiste-service.pistetiedot :as p]
-              [valintapiste-service.config :as c]
-              [ring.adapter.jetty :refer [run-jetty]]
-              [ring.util.http-response :refer :all]
-              [ring.middleware.session :as ring-session]
-              [clojure.tools.logging :as log]
-              [clojure.string :as str]
-              [valintapiste-service.pool :as pool]
-              [schema.core :as s]
-              [valintapiste-service.hakuapp :as mongo]
-              [valintapiste-service.ataru :as ataru]
-              [valintapiste-service.db :as db]
-              [clj-ring-db-session.session.session-store :refer [create-session-store]]
-              [clj-ring-db-session.authentication.auth-middleware :as crdsa-auth-middleware]
-              [clj-ring-db-session.session.session-client :as session-client]
-              [valintapiste-service.auth.session-timeout :as session-timeout]
-              [valintapiste-service.auth.auth :as auth]
-              [valintapiste-service.auth.cas-client :as cas]
-              [ring.util.http-response :as response]
-              [clj-ring-db-session.authentication.login :as crdsa-login]
-              [valintapiste-service.auth.urls :as urls]
-              [clojure.string :refer [split]]
-              [clj-time.core :as t]
-              [clj-time.format :as f]
-              [valintapiste-service.siirtotiedosto :refer [create-siirtotiedosto-client datetime-parser datetime-format]])
-  (:import [org.eclipse.jetty.server.handler
-            HandlerCollection
-            RequestLogHandler]
-            java.util.UUID)
+  (:require [clj-ring-db-session.authentication.auth-middleware :as crdsa-auth-middleware]
+            [clj-ring-db-session.authentication.login :as crdsa-login]
+            [clj-ring-db-session.session.session-client :as session-client]
+            [clj-ring-db-session.session.session-store :refer [create-session-store]]
+            [clj-access-logging]
+            [clj-stdout-access-logging]
+            [clj-timbre-access-logging]
+            [clj-time.core :as t]
+            [clj-time.format :as f]
+            [clojure.string :as str]
+            [clojure.string :refer [split]]
+            [clojure.tools.logging :as log]
+            [compojure.api.sweet :refer :all]
+            [ring.adapter.jetty :refer [run-jetty]]
+            [ring.middleware.session :as ring-session]
+            [ring.util.http-response :refer :all]
+            [ring.util.http-response :as response]
+            [schema.core :as s]
+            [valintapiste-service.ataru :as ataru]
+            [valintapiste-service.audit :refer [audit create-audit-logger]]
+            [valintapiste-service.auth.auth :as auth]
+            [valintapiste-service.auth.cas-client :as cas]
+            [valintapiste-service.auth.session-timeout :as session-timeout]
+            [valintapiste-service.auth.urls :as urls]
+            [valintapiste-service.config :as c]
+            [valintapiste-service.db :as db]
+            [valintapiste-service.hakuapp :as mongo]
+            [valintapiste-service.pistetiedot :as p]
+            [valintapiste-service.pool :as pool]
+            [valintapiste-service.siirtotiedosto :refer [create-siirtotiedosto-client datetime-format datetime-parser]])
+  (:import java.util.UUID
+           (org.eclipse.jetty.server.handler
+                      HandlerCollection
+                      RequestLogHandler))
   (:gen-class))
 
 (def jul-over-slf4j (do (org.slf4j.bridge.SLF4JBridgeHandler/removeHandlersForRootLogger)
@@ -258,6 +260,7 @@
 
                       (middleware
                         [(create-wrap-database-backed-session session-store dev?)
+                         clj-access-logging/wrap-session-access-logging
                          (when-not dev?
                                    #(crdsa-auth-middleware/with-authentication % (urls/cas-login-url config)))]
                         (middleware [session-client/wrap-session-client-headers
@@ -273,16 +276,6 @@
                         (if (str/starts-with? arg config-property)
                           (subs arg (+ 1 (count config-property))) nil)) args))))
 
-(defn- configure-request-log [environment server]
-  (doto server
-
-    (.setHandler (doto (HandlerCollection.)
-                   (.addHandler (.getHandler server))
-                   (.addHandler (doto (RequestLogHandler.)
-                                  (.setRequestLog (doto (access-logger environment) ;access-logger
-                                                    (.setLoggerName "ACCESS")
-                                                    (.start)))))))))
-
 (defn -main [& args]
   (let [config-file (read-config-file-from-args args)
         config (if (some? config-file) (c/readConfigurationFile config-file) (c/readConfigurationFile))
@@ -297,6 +290,5 @@
                           (-> config :valintapiste-cas-username)
                           (-> config :valintapiste-cas-password))
                         datasource "/valintapiste-service" config)
-               {:port         (-> config :server :port)
-                :configurator (partial configure-request-log (-> config :environment))})))
+               {:port         (-> config :server :port)})))
 
