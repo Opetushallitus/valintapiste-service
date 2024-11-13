@@ -41,7 +41,6 @@
    :aliases {"testpostgres" ["with-profile" "testpostgres" "trampoline" "run"]
              "migrate" ["run" "-m" "valintapiste-service.db/migrate"]
              "siirtotiedostot" ["with-profile" "siirtotiedostot" "run"]}
-   :javac-options ["-target" "1.8" "-source" "1.8" "-Xlint:-options"]
    :ring {:handler valintapiste-service.handler/app}
    :uberjar-name "valintapiste-service-0.1.0-SNAPSHOT-standalone.jar"
    :resource-paths ["resources"]
@@ -64,5 +63,12 @@
                                   [org.clojure/java.jdbc "0.7.1"]
                                   [ru.yandex.qatools.embed/postgresql-embedded "2.4"]
                                   [ring/ring-mock "0.3.1"]]}
-              :siirtotiedostot {:main valintapiste-service.siirtotiedosto-app}})
+              :service         {:main valintapiste-service.handler
+                                :uberjar-name "valintapiste-service-0.1.0-SNAPSHOT-standalone.jar"
+                                :aot [valintapiste-service.handler]
+                                :target-path "target/valintapiste-service"}
+              :siirtotiedostot {:main valintapiste-service.siirtotiedosto-app
+                                :uberjar-name "ovara-valintapiste-service-0.1.0-SNAPSHOT-standalone.jar"
+                                :aot [valintapiste-service.siirtotiedosto-app]
+                                :target-path "target/ovara-valintapiste"}})
 
