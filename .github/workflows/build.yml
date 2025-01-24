@@ -10,7 +10,7 @@ jobs:
   test-and-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - uses: dcodeIO/setup-node-nvm@master
         with:
@@ -35,7 +35,7 @@ jobs:
           lein test
           lein do clean, with-profile service:siirtotiedostot uberjar
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         id: restore-build
         with:
           path: target
@@ -45,9 +45,9 @@ jobs:
     needs: [ test-and-build ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v4
         id: restore-build
         with:
           path: target
