@@ -37,6 +37,7 @@
   (let [config-file (read-config-file-from-args args)
         config (if (some? config-file) (c/readConfigurationFile config-file) (c/readConfigurationFile))
         datasource (pool/datasource config)
+        _ (db/migrate datasource)
         connection {:datasource datasource}
         siirtotiedosto-client (create-siirtotiedosto-client config)
         execution-id (str (UUID/randomUUID))
@@ -47,7 +48,6 @@
         start-datetime (if (:window_start new-siirtotiedosto-data)
                          (f/parse datetime-parser (:window_start new-siirtotiedosto-data))
                          (t/epoch))]
-    (db/migrate datasource)
     (log/info (str "Launching siirtotiedosto operation " execution-id ". Previous data: " (first last-siirtotiedosto-data) ", new data " new-siirtotiedosto-data))
     (upsert-data new-siirtotiedosto-data)
     (let [updated-siirtotiedosto-data (->> (p/create-siirtotiedostot-for-pistetiedot datasource
