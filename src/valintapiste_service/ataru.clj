@@ -12,7 +12,7 @@
 (def SYNC-FETCH-LOCK (Object.))
 (def SESSION-TTL-IN-MILLIS (.toMillis TimeUnit/MINUTES (long 30)))
 (def SESSION-FETCH-TIMEOUT (.toMillis TimeUnit/SECONDS (long 5)))
-(def SOCKET-TIMEOUT (.toMillis TimeUnit/SECONDS (long 30)))
+(def SOCKET-TIMEOUT (.toMillis TimeUnit/MINUTES (long 5)))
 
 (defn invalidate-cas-session [cached-session current-session]
   (if (compare-and-set! cached-session current-session nil)
