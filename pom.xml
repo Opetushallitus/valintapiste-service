@@ -11,7 +11,7 @@
     <url>https://github.com/Opetushallitus/valintapiste-service</url>
     <connection>scm:git:git://github.com/Opetushallitus/valintapiste-service.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/Opetushallitus/valintapiste-service.git</developerConnection>
-    <tag>6bdc1cbd9b2cc19ae1738ae655a7bec4245bc77d</tag>
+    <tag>7830e0f9742cc4802b4c1025c0c9093c5580d138</tag>
   </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
@@ -102,7 +102,17 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>2.9.10.4</version>
+        <version>2.20.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>2.20.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-cbor</artifactId>
+        <version>2.20.0</version>
       </dependency>
       <dependency>
         <groupId>org.clojure</groupId>
@@ -135,7 +145,7 @@
     <dependency>
       <groupId>cheshire</groupId>
       <artifactId>cheshire</artifactId>
-      <version>5.8.0</version>
+      <version>5.9.0</version>
     </dependency>
     <dependency>
       <groupId>fi.vm.sade</groupId>
@@ -145,7 +155,7 @@
     <dependency>
       <groupId>metosin</groupId>
       <artifactId>compojure-api</artifactId>
-      <version>1.1.13</version>
+      <version>1.1.14</version>
     </dependency>
     <dependency>
       <groupId>ring</groupId>
@@ -156,11 +166,6 @@
       <groupId>ring</groupId>
       <artifactId>ring-session-timeout</artifactId>
       <version>0.2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>oph</groupId>
-      <artifactId>clj-ring-db-cas-session</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>fi.vm.sade</groupId>
@@ -175,7 +180,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>42.7.4</version>
+      <version>42.7.7</version>
     </dependency>
     <dependency>
       <groupId>yesql</groupId>
@@ -240,7 +245,22 @@
     <dependency>
       <groupId>fi.vm.sade.dokumenttipalvelu</groupId>
       <artifactId>dokumenttipalvelu</artifactId>
-      <version>6.12-SNAPSHOT</version>
+      <version>6.15-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>ring</groupId>
+      <artifactId>ring</artifactId>
+      <version>1.9.1</version>
+    </dependency>
+    <dependency>
+      <groupId>metosin</groupId>
+      <artifactId>ring-http-response</artifactId>
+      <version>0.9.2</version>
+    </dependency>
+    <dependency>
+      <groupId>buddy</groupId>
+      <artifactId>buddy-auth</artifactId>
+      <version>2.2.0</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
